@@ -6,78 +6,146 @@
   <title>Lì Xì Arcade</title>
   <style>
     :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-    body { margin: 0; background: #0b0f14; color: #e8eef6; }
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 18px; display: grid; gap: 14px; }
-    .card { background: #121925; border: 1px solid #22304a; border-radius: 16px; padding: 16px; }
-    h1 { margin: 0; font-size: 20px; }
+    body { margin: 0; background: radial-gradient(1200px 600px at 20% 0%, rgba(43,127,255,.20), transparent 60%), radial-gradient(900px 500px at 80% 20%, rgba(255,80,80,.18), transparent 60%), #070a10; color: #e8eef6; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 18px; display: grid; gap: 14px; }
+    .card { background: rgba(14,20,32,.74); border: 1px solid rgba(70,100,160,.38); border-radius: 18px; padding: 16px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    h1 { margin: 0; font-size: 20px; letter-spacing: .2px; }
     h2 { margin: 0 0 10px; font-size: 16px; opacity: .98; }
-    .pill { display:inline-flex; gap:8px; align-items:center; padding: 6px 10px; border-radius: 999px; border: 1px solid #22304a; background: #0f1520; font-size: 12px; opacity: .95; }
     .topbar { display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-    .tabbar { display:flex; gap:8px; flex-wrap:wrap; margin-top: 10px; }
-    .tabbar button{
-      padding: 10px 12px; border-radius: 999px; border: 1px solid #22304a;
-      background: #0f1520; color:#e8eef6; cursor:pointer; font-weight:800;
-    }
-    .tabbar button.active { background: #2b7fff; border-color: transparent; color: white; }
-    .tab { display:none; }
-    .tab.active { display:block; }
-    .grid { display:grid; grid-template-columns: 1.2fr .8fr; gap: 16px; }
-    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
-    canvas { width: 100%; height: auto; background: #0f1520; border-radius: 16px; border: 1px solid #22304a; }
-    label { font-size: 13px; opacity: .95; }
-    textarea, input, select {
-      width: 100%; box-sizing: border-box;
-      padding: 10px 12px; border-radius: 12px;
-      border: 1px solid #22304a; background: #0f1520; color: #e8eef6;
-      outline: none;
-    }
-    textarea { min-height: 120px; resize: vertical; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding: 7px 12px; border-radius: 999px; border: 1px solid rgba(70,100,160,.38); background: rgba(10,14,22,.7); font-size: 12px; opacity: .96; }
+    .pill b{ font-weight:900; }
     .row { display:grid; gap: 10px; }
     .row.inline { grid-template-columns: 1fr 1fr; gap: 10px; }
-    @media (max-width: 700px) { .row.inline { grid-template-columns: 1fr; } }
+    @media (max-width: 760px) { .row.inline { grid-template-columns: 1fr; } }
+    .grid { display:grid; grid-template-columns: 1.2fr .8fr; gap: 16px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+    .tabbar { display:flex; gap:8px; flex-wrap:wrap; margin-top: 10px; }
+    .tabbar button{
+      padding: 10px 12px; border-radius: 999px; border: 1px solid rgba(70,100,160,.38);
+      background: rgba(10,14,22,.55); color:#e8eef6; cursor:pointer; font-weight:900;
+      transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
+    }
+    .tabbar button:hover{ transform: translateY(-1px); box-shadow: 0 10px 22px rgba(0,0,0,.25); }
+    .tabbar button.active { background: linear-gradient(135deg, #2b7fff, #7a5cff); border-color: transparent; color: white; }
+    .tab { display:none; }
+    .tab.active { display:block; }
+
+    label { font-size: 13px; opacity: .98; display:flex; align-items:center; gap:8px; }
+    .lockTag{ font-size:12px; opacity:.9; padding:3px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background: rgba(0,0,0,.22); }
+    textarea, input, select {
+      width: 100%; box-sizing: border-box;
+      padding: 10px 12px; border-radius: 14px;
+      border: 1px solid rgba(70,100,160,.38); background: rgba(10,14,22,.62); color: #e8eef6;
+      outline: none;
+      transition: box-shadow .12s ease, transform .12s ease, border-color .12s ease;
+    }
+    textarea:focus, input:focus, select:focus{
+      border-color: rgba(120,170,255,.7);
+      box-shadow: 0 0 0 4px rgba(43,127,255,.18);
+    }
+    textarea { min-height: 120px; resize: vertical; }
+
     button.primary {
       padding: 12px 14px; border-radius: 14px; border: 0;
-      background: #2b7fff; color: white; font-weight: 900; cursor: pointer;
+      background: linear-gradient(135deg, #2b7fff, #7a5cff);
+      color: white; font-weight: 950; cursor: pointer;
+      box-shadow: 0 10px 26px rgba(43,127,255,.22);
+      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
     }
+    button.primary:hover{ transform: translateY(-1px); filter: brightness(1.06); box-shadow: 0 14px 30px rgba(43,127,255,.28); }
     button.secondary {
-      padding: 12px 14px; border-radius: 14px; border: 1px solid #22304a;
-      background: #0f1520; color: #e8eef6; font-weight: 900; cursor: pointer;
+      padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(70,100,160,.38);
+      background: rgba(10,14,22,.55); color: #e8eef6; font-weight: 950; cursor: pointer;
+      transition: transform .12s ease, background .12s ease;
     }
-    button:disabled { opacity: .55; cursor:not-allowed; }
+    button.secondary:hover{ transform: translateY(-1px); background: rgba(10,14,22,.68); }
+    button:disabled { opacity: .55; cursor:not-allowed; transform:none !important; }
+
+    canvas#wheelCanvas { width: 100%; height: auto; background: rgba(10,14,22,.55); border-radius: 18px; border: 1px solid rgba(70,100,160,.38); }
+
     .result {
-      font-size: 18px; font-weight: 900; padding: 12px; border-radius: 14px;
-      background: #0f1520; border: 1px solid #22304a;
+      font-size: 18px; font-weight: 950; padding: 12px; border-radius: 14px;
+      background: rgba(10,14,22,.62); border: 1px solid rgba(70,100,160,.38);
+      position: relative;
+      overflow: hidden;
     }
+    .result.pop{ animation: pop .25s ease; }
+    @keyframes pop{ 0%{ transform: scale(.98);} 60%{ transform: scale(1.03);} 100%{ transform: scale(1);} }
+
     .history { font-size: 13px; max-height: 160px; overflow:auto; }
-    .history div { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .history div { padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.06); opacity:.95; }
+
     .roulette-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .roulette-cell {
-      border: 1px solid #22304a; border-radius: 10px; padding: 10px;
-      background:#0f1520; display:flex; align-items:center; justify-content:space-between;
-      font-weight:900;
+      border: 1px solid rgba(70,100,160,.38); border-radius: 12px; padding: 10px;
+      background: rgba(10,14,22,.55); display:flex; align-items:center; justify-content:space-between;
+      font-weight:950;
+      transition: transform .12s ease, box-shadow .12s ease;
     }
-    .roulette-cell.red { background: rgba(255,80,80,0.14); }
-    .roulette-cell.black { background: rgba(255,255,255,0.10); }
-    .roulette-cell.green { background: rgba(70,255,170,0.12); }
-    .roulette-cell.active { outline: 2px solid #2b7fff; }
+    .roulette-cell.active { outline: 2px solid rgba(43,127,255,.95); box-shadow: 0 0 0 6px rgba(43,127,255,.15); transform: translateY(-1px); }
+    .roulette-cell.red { background: linear-gradient(180deg, rgba(255,80,80,0.18), rgba(10,14,22,.55)); }
+    .roulette-cell.black { background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(10,14,22,.55)); }
+    .roulette-cell.green { background: linear-gradient(180deg, rgba(70,255,170,0.16), rgba(10,14,22,.55)); }
+
     .hand { display:flex; flex-wrap:wrap; gap:8px; }
     .cardchip{
-      border:1px solid #22304a; background:#0f1520; border-radius:12px;
-      padding:10px 12px; font-weight:900; min-width: 68px; text-align:center;
+      border:1px solid rgba(70,100,160,.38); background: rgba(10,14,22,.62); border-radius:14px;
+      padding:10px 12px; font-weight:950; min-width: 68px; text-align:center;
+      box-shadow: 0 10px 22px rgba(0,0,0,.18);
+      animation: deal .18s ease;
     }
+    @keyframes deal { from{ transform: translateY(6px); opacity:.0;} to{ transform: translateY(0); opacity:1;} }
+
+    #fxCanvas{ position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+    .toastWrap{ position: fixed; right: 14px; bottom: 14px; display:grid; gap:10px; z-index: 60; }
+    .toast{
+      width: min(360px, calc(100vw - 28px));
+      background: rgba(10,14,22,.78);
+      border: 1px solid rgba(70,100,160,.38);
+      border-radius: 16px;
+      padding: 10px 12px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.35);
+      animation: toastIn .18s ease;
+    }
+    @keyframes toastIn{ from{ transform: translateY(8px); opacity:.0;} to{ transform: translateY(0); opacity:1;} }
+    .toast b{ font-weight:950; }
+    .miniBtn{
+      padding: 8px 10px; border-radius: 12px; border: 1px solid rgba(70,100,160,.38);
+      background: rgba(10,14,22,.55); color:#e8eef6; cursor:pointer; font-weight:900;
+    }
+
+    .shake{ animation: shake .22s ease; }
+    @keyframes shake{
+      0%{ transform: translateX(0); }
+      25%{ transform: translateX(-4px); }
+      50%{ transform: translateX(4px); }
+      75%{ transform: translateX(-3px); }
+      100%{ transform: translateX(0); }
+    }
+
+    .toggle{ display:flex; align-items:center; gap:8px; }
+    .toggle input{ width:auto; transform: translateY(1px); }
   </style>
 </head>
 <body>
+  <canvas id="fxCanvas"></canvas>
+  <div class="toastWrap" id="toastWrap"></div>
+
   <div class="wrap">
     <div class="card">
       <div class="topbar">
         <h1>🧧 Lì Xì Arcade</h1>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <span class="pill">Status: <span id="mpStatus">Offline</span></span>
-          <span class="pill">Room: <span id="roomCode">demo</span></span>
-          <span class="pill">Bạn: <span id="playerCode">—</span></span>
+          <span class="pill">Status: <b id="mpStatus">Offline</b></span>
+          <span class="pill">Room: <b id="roomCode">demo</b></span>
+          <span class="pill">Bạn: <b id="playerCode">—</b></span>
+          <span class="pill">Online: <b id="presence">—</b></span>
+          <button class="miniBtn" id="copyLinkBtn">Copy link phòng</button>
+          <span class="pill toggle"><input type="checkbox" id="lockMode" checked /> Lock mode</span>
         </div>
       </div>
+
       <div class="tabbar" role="tablist" aria-label="Game tabs">
         <button class="active" data-tab-btn="wheel">Vòng quay</button>
         <button data-tab-btn="taixiu">Tài/Xỉu</button>
@@ -90,21 +158,19 @@
       <h2>Vòng quay</h2>
       <div class="grid">
         <div class="row">
-          <canvas id="wheelCanvas" width="700" height="700"></canvas>
+          <canvas id="wheelCanvas" width="720" height="720"></canvas>
         </div>
         <div class="row">
-          <label>Mục (mỗi dòng 1 mục)</label>
-          <textarea id="wheelItems">10,000₫
-20,000₫
-50,000₫
-100,000₫
-200,000₫
-500,000₫
-1,000,000₫
-Nhân đôi
-Thêm lượt</textarea>
+          <label>
+            Mục
+            <span class="lockTag" id="lockTag-wheelItems" style="display:none"></span>
+          </label>
+          <textarea id="wheelItems"></textarea>
 
-          <label>Tốc độ</label>
+          <label>
+            Tốc độ
+            <span class="lockTag" id="lockTag-wheelSpeed" style="display:none"></span>
+          </label>
           <input id="wheelSpeed" type="range" min="1" max="10" value="6" />
 
           <div class="row inline">
@@ -124,7 +190,7 @@ Thêm lượt</textarea>
         <div class="row">
           <div class="row inline">
             <div>
-              <label>Bạn chọn</label>
+              <label>Tôi chọn</label>
               <select id="txPick">
                 <option value="tai">Tài</option>
                 <option value="xiu">Xỉu</option>
@@ -147,16 +213,17 @@ Thêm lượt</textarea>
 
         <div class="row">
           <div class="card" style="padding:14px;">
-            <label>THẮNG</label>
-            <textarea id="txWinRewards">50,000₫
-100,000₫
-200,000₫
-Trà sữa</textarea>
+            <label>
+              THẮNG
+              <span class="lockTag" id="lockTag-txWinRewards" style="display:none"></span>
+            </label>
+            <textarea id="txWinRewards"></textarea>
 
-            <label>THUA</label>
-            <textarea id="txLoseRewards">10,000₫
-20,000₫
-Ôm 1 cái</textarea>
+            <label>
+              THUA
+              <span class="lockTag" id="lockTag-txLoseRewards" style="display:none"></span>
+            </label>
+            <textarea id="txLoseRewards"></textarea>
           </div>
         </div>
       </div>
@@ -177,12 +244,12 @@ Trà sữa</textarea>
           </div>
 
           <div class="card" style="padding:14px;">
-            <div style="opacity:.85;font-size:13px;">Dealer</div>
+            <div style="opacity:.86;font-size:13px;">Dealer</div>
             <div class="hand" id="bjDealerHand"></div>
-            <div style="height:10px"></div>
-            <div style="opacity:.85;font-size:13px;">Bạn</div>
+            <div style="height:12px"></div>
+            <div style="opacity:.86;font-size:13px;">Bạn</div>
             <div class="hand" id="bjPlayerHand"></div>
-            <div style="height:10px"></div>
+            <div style="height:12px"></div>
             <div class="result" id="bjResult">—</div>
           </div>
 
@@ -191,18 +258,23 @@ Trà sữa</textarea>
 
         <div class="row">
           <div class="card" style="padding:14px;">
-            <label>THẮNG</label>
-            <textarea id="bjWinRewards">100,000₫
-200,000₫
-500,000₫</textarea>
+            <label>
+              THẮNG
+              <span class="lockTag" id="lockTag-bjWinRewards" style="display:none"></span>
+            </label>
+            <textarea id="bjWinRewards"></textarea>
 
-            <label>HÒA</label>
-            <textarea id="bjPushRewards">50,000₫
-Trà sữa</textarea>
+            <label>
+              HÒA
+              <span class="lockTag" id="lockTag-bjPushRewards" style="display:none"></span>
+            </label>
+            <textarea id="bjPushRewards"></textarea>
 
-            <label>THUA</label>
-            <textarea id="bjLoseRewards">10,000₫
-20,000₫</textarea>
+            <label>
+              THUA
+              <span class="lockTag" id="lockTag-bjLoseRewards" style="display:none"></span>
+            </label>
+            <textarea id="bjLoseRewards"></textarea>
           </div>
         </div>
       </div>
@@ -214,7 +286,7 @@ Trà sữa</textarea>
         <div class="row">
           <div class="row inline">
             <div>
-              <label>Loại</label>
+              <label>Tôi cược</label>
               <select id="rlBetType">
                 <option value="red">Đỏ</option>
                 <option value="black">Đen</option>
@@ -243,82 +315,231 @@ Trà sữa</textarea>
 
         <div class="row">
           <div class="card" style="padding:14px;">
-            <label>TRÚNG</label>
-            <textarea id="rlWinRewards">100,000₫
-200,000₫
-500,000₫</textarea>
+            <label>
+              TRÚNG
+              <span class="lockTag" id="lockTag-rlWinRewards" style="display:none"></span>
+            </label>
+            <textarea id="rlWinRewards"></textarea>
 
-            <label>TRẬT</label>
-            <textarea id="rlLoseRewards">10,000₫
-20,000₫</textarea>
+            <label>
+              TRẬT
+              <span class="lockTag" id="lockTag-rlLoseRewards" style="display:none"></span>
+            </label>
+            <textarea id="rlLoseRewards"></textarea>
           </div>
         </div>
       </div>
     </section>
-
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     (() => {
-      function randInt(n) {
-        const x = new Uint32Array(1);
-        crypto.getRandomValues(x);
-        return x[0] % n;
+      const fxCanvas = document.getElementById("fxCanvas");
+      const fx = fxCanvas.getContext("2d");
+      let fxW = 0, fxH = 0;
+      function fxResize() {
+        const dpr = window.devicePixelRatio || 1;
+        fxW = Math.floor(innerWidth * dpr);
+        fxH = Math.floor(innerHeight * dpr);
+        fxCanvas.width = fxW;
+        fxCanvas.height = fxH;
+        fxCanvas.style.width = innerWidth + "px";
+        fxCanvas.style.height = innerHeight + "px";
+        fx.setTransform(1,0,0,1,0,0);
       }
-      function parseLines(text) {
-        return String(text || "").split("\n").map(s => s.trim()).filter(Boolean);
+      addEventListener("resize", fxResize);
+      fxResize();
+
+      const toastWrap = document.getElementById("toastWrap");
+      function toast(title, msg) {
+        const el = document.createElement("div");
+        el.className = "toast";
+        el.innerHTML = `<b>${title}</b><div style="opacity:.92;margin-top:4px">${msg}</div>`;
+        toastWrap.appendChild(el);
+        setTimeout(() => { el.style.opacity = "0"; el.style.transform = "translateY(6px)"; }, 2600);
+        setTimeout(() => el.remove(), 3100);
       }
-      function pickFromTextarea(textareaEl) {
-        const arr = parseLines(textareaEl.value);
-        if (!arr.length) return "—";
-        return arr[randInt(arr.length)];
+
+      let audioCtx = null;
+      function beep(type) {
+        try {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const t0 = audioCtx.currentTime;
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = "sine";
+          o.frequency.value = type === "win" ? 880 : type === "spin" ? 520 : 180;
+          g.gain.setValueAtTime(0.0001, t0);
+          g.gain.exponentialRampToValueAtTime(type === "win" ? 0.10 : 0.06, t0 + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + (type === "win" ? 0.24 : 0.16));
+          o.connect(g); g.connect(audioCtx.destination);
+          o.start(t0);
+          o.stop(t0 + (type === "win" ? 0.26 : 0.18));
+        } catch {}
       }
-      function nowTime() {
-        return new Date().toLocaleTimeString();
+
+      const confetti = [];
+      function confettiBurst(intensity=1) {
+        const n = Math.floor(80 * intensity);
+        for (let i = 0; i < n; i++) {
+          confetti.push({
+            x: fxW * (0.2 + Math.random() * 0.6),
+            y: -20,
+            vx: (Math.random() - 0.5) * 6,
+            vy: 6 + Math.random() * 8,
+            r: 2 + Math.random() * 4,
+            a: 1,
+            rot: Math.random() * Math.PI,
+            vr: (Math.random() - 0.5) * 0.25
+          });
+        }
       }
+      function fxTick() {
+        fx.clearRect(0,0,fxW,fxH);
+        for (let i = confetti.length - 1; i >= 0; i--) {
+          const p = confetti[i];
+          p.vy += 0.15;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vr;
+          p.a *= 0.992;
+          if (p.y > fxH + 60 || p.a < 0.03) confetti.splice(i, 1);
+          else {
+            fx.save();
+            fx.globalAlpha = p.a;
+            fx.translate(p.x, p.y);
+            fx.rotate(p.rot);
+            fx.fillStyle = `hsl(${Math.floor((p.x+p.y) % 360)}, 90%, 60%)`;
+            fx.fillRect(-p.r, -p.r, p.r*2.2, p.r*1.2);
+            fx.restore();
+          }
+        }
+        requestAnimationFrame(fxTick);
+      }
+      fxTick();
+
+      function nowTime() { return new Date().toLocaleTimeString(); }
       function addHistory(container, text) {
         const div = document.createElement("div");
         div.textContent = `${nowTime()} — ${text}`;
         container.prepend(div);
       }
-      function who(by) {
-        return by ? `P${by}` : "Khách";
+      function who(by) { return by ? `P${by}` : "Khách"; }
+
+      const mpStatusEl = document.getElementById("mpStatus");
+      const roomCodeEl = document.getElementById("roomCode");
+      const playerCodeEl = document.getElementById("playerCode");
+      const presenceEl = document.getElementById("presence");
+      const copyLinkBtn = document.getElementById("copyLinkBtn");
+      const lockModeEl = document.getElementById("lockMode");
+
+      const qs = new URLSearchParams(location.search);
+      const room = qs.get("room") || "demo";
+      roomCodeEl.textContent = room;
+
+      copyLinkBtn.addEventListener("click", async () => {
+        const link = `${location.origin}/?room=${encodeURIComponent(room)}`;
+        try {
+          await navigator.clipboard.writeText(link);
+          toast("Copied", link);
+          beep("spin");
+        } catch {
+          toast("Copy failed", link);
+        }
+      });
+
+      let socket = null;
+      let myPlayerId = 0;
+      let locks = {};
+
+      function lockTag(field, pid) {
+        const el = document.getElementById("lockTag-" + field);
+        if (!el) return;
+        if (!pid) { el.style.display = "none"; el.textContent = ""; return; }
+        el.style.display = "inline-flex";
+        el.textContent = `đang chỉnh bởi P${pid}`;
+      }
+
+      function applyLockState() {
+        const lockMode = !!lockModeEl.checked;
+        const map = locks || {};
+        const lockFields = Object.keys(map);
+
+        const isLockedByOther = (field) => lockMode && map[field] && map[field] !== myPlayerId;
+
+        const setRO = (el, ro) => {
+          if (!el) return;
+          if (el.tagName === "TEXTAREA" || el.tagName === "INPUT") el.readOnly = ro;
+          if (el.tagName === "SELECT") el.disabled = ro;
+        };
+
+        const items = [
+          ["wheelItems", document.getElementById("wheelItems")],
+          ["wheelSpeed", document.getElementById("wheelSpeed")],
+          ["txWinRewards", document.getElementById("txWinRewards")],
+          ["txLoseRewards", document.getElementById("txLoseRewards")],
+          ["bjWinRewards", document.getElementById("bjWinRewards")],
+          ["bjPushRewards", document.getElementById("bjPushRewards")],
+          ["bjLoseRewards", document.getElementById("bjLoseRewards")],
+          ["rlWinRewards", document.getElementById("rlWinRewards")],
+          ["rlLoseRewards", document.getElementById("rlLoseRewards")]
+        ];
+
+        for (const [f, el] of items) setRO(el, isLockedByOther(f));
+        for (const f of ["wheelItems","wheelSpeed","txWinRewards","txLoseRewards","bjWinRewards","bjPushRewards","bjLoseRewards","rlWinRewards","rlLoseRewards"]) {
+          lockTag(f, map[f] || 0);
+        }
+      }
+
+      function setLock(field, locked) {
+        if (!socket || !socket.connected) return;
+        socket.emit("lock:set", { field, locked });
+      }
+
+      function bindLock(el, field) {
+        el.addEventListener("focus", () => { if (lockModeEl.checked) setLock(field, true); });
+        el.addEventListener("blur",  () => { if (lockModeEl.checked) setLock(field, false); });
+      }
+
+      function sendState(field, value) {
+        if (!socket || !socket.connected) return;
+        socket.emit("state:set", { field, value });
+      }
+
+      function debounce(fn, ms) {
+        let t = null;
+        return (...args) => {
+          clearTimeout(t);
+          t = setTimeout(() => fn(...args), ms);
+        };
+      }
+
+      let applying = new Set();
+      function applyControlValue(el, value, key) {
+        if (!el) return;
+        applying.add(key);
+        if (el.type === "range" || el.type === "number") el.value = String(value);
+        else el.value = String(value ?? "");
+        applying.delete(key);
       }
 
       const tabBtns = [...document.querySelectorAll("[data-tab-btn]")];
       const tabs = [...document.querySelectorAll(".tab")];
+
+      function setTab(name, silent=false) {
+        tabBtns.forEach(b => b.classList.toggle("active", b.getAttribute("data-tab-btn") === name));
+        tabs.forEach(t => t.classList.toggle("active", t.getAttribute("data-tab") === name));
+        if (!silent && socket && socket.connected) socket.emit("ui:tab", { tab: name });
+      }
+
       tabBtns.forEach(btn => {
         btn.addEventListener("click", () => {
+          beep("spin");
           const name = btn.getAttribute("data-tab-btn");
-          tabBtns.forEach(b => b.classList.toggle("active", b === btn));
-          tabs.forEach(t => t.classList.toggle("active", t.getAttribute("data-tab") === name));
+          setTab(name, false);
         });
       });
-
-      const qs = new URLSearchParams(location.search);
-      const room = qs.get("room") || "demo";
-      const mpStatusEl = document.getElementById("mpStatus");
-      const roomCodeEl = document.getElementById("roomCode");
-      const playerCodeEl = document.getElementById("playerCode");
-
-      roomCodeEl.textContent = room;
-
-      let myPlayerId = 0;
-      let socket = null;
-
-      try {
-        socket = io({ query: { room }, transports: ["websocket"] });
-        socket.on("connect", () => { mpStatusEl.textContent = "Online"; });
-        socket.on("disconnect", () => { mpStatusEl.textContent = "Offline"; });
-        socket.on("init", data => {
-          myPlayerId = data.playerId || 0;
-          playerCodeEl.textContent = myPlayerId ? `P${myPlayerId}` : "Khách";
-          if (data.bj) applyBjState(data.bj, true);
-        });
-      } catch (e) {
-        mpStatusEl.textContent = "Offline";
-      }
 
       const wheelCanvas = document.getElementById("wheelCanvas");
       const wctx = wheelCanvas.getContext("2d");
@@ -333,6 +554,10 @@ Trà sữa</textarea>
       let wheelAngle = 0;
       let wheelSpinning = false;
 
+      function parseLines(text) {
+        return String(text || "").split("\n").map(s => s.trim()).filter(Boolean);
+      }
+
       function wheelParseItems() {
         wheelItems = parseLines(wheelItemsEl.value);
         if (wheelItems.length < 2) wheelItems = ["10,000₫", "20,000₫"];
@@ -345,9 +570,12 @@ Trà sữa</textarea>
 
         wctx.clearRect(0, 0, W, H);
 
+        const glow = wctx.createRadialGradient(cx, cy, r*0.2, cx, cy, r*1.1);
+        glow.addColorStop(0, "rgba(122,92,255,0.18)");
+        glow.addColorStop(1, "rgba(0,0,0,0)");
+        wctx.fillStyle = glow;
         wctx.beginPath();
-        wctx.arc(cx, cy, r + 18, 0, Math.PI * 2);
-        wctx.fillStyle = "rgba(43,127,255,0.08)";
+        wctx.arc(cx, cy, r*1.02, 0, Math.PI*2);
         wctx.fill();
 
         const n = wheelItems.length;
@@ -374,7 +602,7 @@ Trà sữa</textarea>
           wctx.rotate(a0 + slice / 2);
           wctx.textAlign = "right";
           wctx.fillStyle = "rgba(232,238,246,0.95)";
-          wctx.font = "800 22px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+          wctx.font = "900 22px system-ui, -apple-system, Segoe UI, Roboto, Arial";
           const label = wheelItems[i];
           wctx.fillText(label.length > 18 ? label.slice(0, 18) + "…" : label, r - 16, 8);
           wctx.restore();
@@ -382,7 +610,7 @@ Trà sữa</textarea>
 
         wctx.beginPath();
         wctx.arc(cx, cy, r * 0.14, 0, Math.PI * 2);
-        wctx.fillStyle = "#0b0f14";
+        wctx.fillStyle = "rgba(8,10,16,.92)";
         wctx.fill();
         wctx.strokeStyle = "rgba(255,255,255,0.12)";
         wctx.lineWidth = 2;
@@ -412,15 +640,12 @@ Trà sữa</textarea>
         return Math.floor(rel / slice) % n;
       }
 
-      function wheelSpin(targetIndexOverride) {
+      function wheelSpinTo(targetIndex) {
         if (wheelSpinning) return;
         wheelParseItems();
 
         wheelSpinning = true;
         wheelSpinBtn.disabled = true;
-        wheelResultEl.textContent = "…";
-
-        const targetIndex = Number.isInteger(targetIndexOverride) ? targetIndexOverride : randInt(wheelItems.length);
 
         const current = wheelIndexAtPointer();
         const n = wheelItems.length;
@@ -429,13 +654,19 @@ Trà sữa</textarea>
         let delta = (targetIndex - current);
         if (delta < 0) delta += n;
 
-        const baseTurns = 6 + Math.floor(Number(wheelSpeedEl.value) / 2);
+        const sp = Number(wheelSpeedEl.value || 6);
+        const baseTurns = 7 + Math.floor(sp / 2);
         const totalRotation = (baseTurns * Math.PI * 2) + (delta * slice);
 
         const startAngle = wheelAngle;
-        const duration = 2200 + Number(wheelSpeedEl.value) * 180;
+        const duration = 1900 + sp * 190;
         const t0 = performance.now();
         const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+
+        wheelResultEl.textContent = "…";
+        wheelResultEl.classList.remove("pop");
+
+        beep("spin");
 
         function frame(t) {
           const p = Math.min(1, (t - t0) / duration);
@@ -448,8 +679,12 @@ Trà sữa</textarea>
             wheelSpinBtn.disabled = false;
 
             const idx = wheelIndexAtPointer();
-            const win = wheelItems[idx];
+            const win = wheelItems[idx] || "—";
             wheelResultEl.textContent = win;
+            wheelResultEl.classList.add("pop");
+
+            const big = /1,000,000|500,000|Nhân đôi|🎉/i.test(win);
+            if (big) { confettiBurst(1.2); beep("win"); }
           }
         }
         requestAnimationFrame(frame);
@@ -465,33 +700,27 @@ Trà sữa</textarea>
         wheelDraw();
       }
 
-      wheelItemsEl.addEventListener("input", () => { if (!wheelSpinning) { wheelParseItems(); wheelDraw(); }});
-      wheelResetBtn.addEventListener("click", wheelReset);
+      wheelResetBtn.addEventListener("click", () => { beep("tap"); wheelReset(); });
 
-      wheelSpinBtn.addEventListener("click", () => {
+      bindLock(wheelItemsEl, "wheelItems");
+      bindLock(wheelSpeedEl, "wheelSpeed");
+
+      wheelItemsEl.addEventListener("input", debounce(() => {
+        if (applying.has("wheelItems")) return;
+        sendState("wheelItems", wheelItemsEl.value);
         wheelParseItems();
-        if (socket && socket.connected) {
-          socket.emit("wheel:spin", { items: wheelItems, speed: Number(wheelSpeedEl.value) });
-        } else {
-          wheelSpin();
-          addHistory(wheelHistoryEl, `Quay: ${wheelResultEl.textContent}`);
-        }
+        wheelDraw();
+      }, 140));
+
+      wheelSpeedEl.addEventListener("input", () => {
+        if (applying.has("wheelSpeed")) return;
+        sendState("wheelSpeed", Number(wheelSpeedEl.value));
       });
 
-      if (socket) {
-        socket.on("wheel:spinResult", data => {
-          if (Array.isArray(data.items) && data.items.length >= 2) {
-            wheelItemsEl.value = data.items.join("\n");
-            wheelParseItems();
-          }
-          if (data.speed) wheelSpeedEl.value = String(data.speed);
-          wheelSpin(data.targetIndex);
-          const idx = data.targetIndex;
-          const v = wheelItems[idx] || "—";
-          addHistory(wheelHistoryEl, `${who(data.by)} quay: ${v}`);
-          wheelResultEl.textContent = v;
-        });
-      }
+      wheelSpinBtn.addEventListener("click", () => {
+        beep("spin");
+        if (socket && socket.connected) socket.emit("wheel:spin");
+      });
 
       wheelParseItems();
       wheelDraw();
@@ -507,73 +736,56 @@ Trà sữa</textarea>
 
       const diceFaces = ["⚀","⚁","⚂","⚃","⚄","⚅"];
 
-      function txRollLocal() {
-        txRollBtn.disabled = true;
-        const steps = 8 + Number(txSpeedEl.value);
-        let i = 0;
+      bindLock(txWinRewardsEl, "txWinRewards");
+      bindLock(txLoseRewardsEl, "txLoseRewards");
 
-        function once() {
-          return randInt(6) + 1;
-        }
+      txWinRewardsEl.addEventListener("input", debounce(() => {
+        if (applying.has("txWinRewards")) return;
+        sendState("txWinRewards", txWinRewardsEl.value);
+      }, 140));
 
-        function anim() {
-          i++;
-          const d1 = once(), d2 = once(), d3 = once();
-          const sum = d1 + d2 + d3;
-          txResultEl.textContent = `${diceFaces[d1-1]} ${diceFaces[d2-1]} ${diceFaces[d3-1]} | ${sum}`;
-          if (i < steps) {
-            setTimeout(anim, 40 + (10 - Number(txSpeedEl.value)) * 10);
-          } else {
-            const f1 = once(), f2 = once(), f3 = once();
-            const finalSum = f1 + f2 + f3;
-            const out = finalSum >= 11 ? "tai" : "xiu";
-            const pick = txPickEl.value;
-            const win = out === pick;
-            const reward = win ? pickFromTextarea(txWinRewardsEl) : pickFromTextarea(txLoseRewardsEl);
-            const outLabel = out === "tai" ? "TÀI" : "XỈU";
-            const pickLabel = pick === "tai" ? "TÀI" : "XỈU";
-            txResultEl.textContent = `${diceFaces[f1-1]} ${diceFaces[f2-1]} ${diceFaces[f3-1]} | ${finalSum} | ${outLabel} | ${pickLabel} | ${win ? "THẮNG" : "THUA"} | ${reward}`;
-            addHistory(txHistoryEl, `Local: ${finalSum} ${outLabel} ${win ? "W" : "L"} ${reward}`);
-            txRollBtn.disabled = false;
-          }
-        }
+      txLoseRewardsEl.addEventListener("input", debounce(() => {
+        if (applying.has("txLoseRewards")) return;
+        sendState("txLoseRewards", txLoseRewardsEl.value);
+      }, 140));
 
-        anim();
-      }
+      txPickEl.addEventListener("change", () => {
+        beep("tap");
+        if (!myPlayerId) return;
+        sendState(`txPick.${myPlayerId}`, txPickEl.value);
+        toast("Tài/Xỉu", `Bạn chọn ${txPickEl.value === "tai" ? "TÀI" : "XỈU"}`);
+      });
 
       txRollBtn.addEventListener("click", () => {
-        if (socket && socket.connected) {
-          socket.emit("tx:roll", {
-            pick: txPickEl.value,
-            winRewards: parseLines(txWinRewardsEl.value),
-            loseRewards: parseLines(txLoseRewardsEl.value)
-          });
-        } else {
-          txRollLocal();
-        }
+        beep("spin");
+        if (socket && socket.connected) socket.emit("tx:roll");
       });
 
       txResetBtn.addEventListener("click", () => {
+        beep("tap");
         txResultEl.textContent = "—";
         txHistoryEl.innerHTML = "";
         txRollBtn.disabled = false;
       });
 
-      if (socket) {
-        socket.on("tx:result", data => {
-          const d1 = data.d1, d2 = data.d2, d3 = data.d3;
-          const sum = data.sum;
-          const out = data.out;
-          const pick = data.pick;
-          const win = data.win;
-          const reward = data.reward;
-
-          const outLabel = out === "tai" ? "TÀI" : "XỈU";
-          const pickLabel = pick === "tai" ? "TÀI" : "XỈU";
-
-          txResultEl.textContent = `${diceFaces[d1-1]} ${diceFaces[d2-1]} ${diceFaces[d3-1]} | ${sum} | ${outLabel} | ${pickLabel} | ${win ? "THẮNG" : "THUA"} | ${reward}`;
-          addHistory(txHistoryEl, `${who(data.by)}: ${sum} ${outLabel} ${win ? "W" : "L"} ${reward}`);
-        });
+      function animateDiceThen(final, speed) {
+        const steps = 7 + Number(speed || 6);
+        let i = 0;
+        txRollBtn.disabled = true;
+        function r() { return 1 + Math.floor(Math.random() * 6); }
+        function tick() {
+          i++;
+          const d1 = r(), d2 = r(), d3 = r();
+          const sum = d1 + d2 + d3;
+          txResultEl.textContent = `${diceFaces[d1-1]} ${diceFaces[d2-1]} ${diceFaces[d3-1]} | ${sum}`;
+          if (i < steps) {
+            setTimeout(tick, 38 + (10 - Number(speed || 6)) * 10);
+          } else {
+            txRollBtn.disabled = false;
+            final();
+          }
+        }
+        tick();
       }
 
       const bjDealBtn = document.getElementById("bjDealBtn");
@@ -590,6 +802,23 @@ Trà sữa</textarea>
       const bjPushRewardsEl = document.getElementById("bjPushRewards");
       const bjLoseRewardsEl = document.getElementById("bjLoseRewards");
 
+      bindLock(bjWinRewardsEl, "bjWinRewards");
+      bindLock(bjPushRewardsEl, "bjPushRewards");
+      bindLock(bjLoseRewardsEl, "bjLoseRewards");
+
+      bjWinRewardsEl.addEventListener("input", debounce(() => {
+        if (applying.has("bjWinRewards")) return;
+        sendState("bjWinRewards", bjWinRewardsEl.value);
+      }, 140));
+      bjPushRewardsEl.addEventListener("input", debounce(() => {
+        if (applying.has("bjPushRewards")) return;
+        sendState("bjPushRewards", bjPushRewardsEl.value);
+      }, 140));
+      bjLoseRewardsEl.addEventListener("input", debounce(() => {
+        if (applying.has("bjLoseRewards")) return;
+        sendState("bjLoseRewards", bjLoseRewardsEl.value);
+      }, 140));
+
       let bjPlayer = [];
       let bjDealer = [];
       let bjInRound = false;
@@ -597,7 +826,6 @@ Trà sữa</textarea>
       let bjTurn = 1;
 
       function bjCardText(c) { return `${c.r}${c.s}`; }
-
       function bjHandValue(hand) {
         let total = 0;
         let aces = 0;
@@ -649,28 +877,22 @@ Trà sữa</textarea>
 
         if (!bjInRound && s.lastOutcome) {
           const label = s.lastOutcome === "win" ? "THẮNG" : s.lastOutcome === "push" ? "HÒA" : "THUA";
-          bjResultEl.textContent = `${label} | Bạn ${pVal} | Dealer ${dVal} | ${s.lastReward || "—"} | Lượt kế: P${bjTurn}`;
-          if (!silent) addHistory(bjHistoryEl, `${label}: ${pVal}-${dVal} ${s.lastReward || "—"}`);
+          bjResultEl.textContent = `${label} | Bạn ${pVal} | Dealer ${dVal} | ${s.lastReward || "—"} | Lượt: P${bjTurn}`;
+          bjResultEl.classList.add("pop");
+
+          if (!silent) addHistory(bjHistoryEl, `${label}: ${pVal}-${dVal} | ${s.lastReward || "—"}`);
+
+          if (s.lastOutcome === "win") { confettiBurst(1.1); beep("win"); }
+          else if (s.lastOutcome === "lose") { document.body.classList.add("shake"); beep("tap"); setTimeout(()=>document.body.classList.remove("shake"), 240); }
         } else {
           bjResultEl.textContent = bjInRound && bjDealerHidden ? `Bạn ${pVal} | Dealer ? | Lượt: P${bjTurn}` : `Bạn ${pVal} | Dealer ${dVal} | Lượt: P${bjTurn}`;
         }
       }
 
-      function sendBj(ev) {
-        if (!(socket && socket.connected)) return;
-        socket.emit(ev, {
-          winRewards: parseLines(bjWinRewardsEl.value),
-          pushRewards: parseLines(bjPushRewardsEl.value),
-          loseRewards: parseLines(bjLoseRewardsEl.value)
-        });
-      }
-
-      bjDealBtn.addEventListener("click", () => sendBj("bj:deal"));
-      bjHitBtn.addEventListener("click", () => sendBj("bj:hit"));
-      bjStandBtn.addEventListener("click", () => sendBj("bj:stand"));
-      bjNewBtn.addEventListener("click", () => { if (socket && socket.connected) socket.emit("bj:new"); });
-
-      if (socket) socket.on("bj:state", s => applyBjState(s, false));
+      bjDealBtn.addEventListener("click", () => { beep("spin"); if (socket && socket.connected) socket.emit("bj:deal"); });
+      bjHitBtn.addEventListener("click", () => { beep("tap"); if (socket && socket.connected) socket.emit("bj:hit"); });
+      bjStandBtn.addEventListener("click", () => { beep("tap"); if (socket && socket.connected) socket.emit("bj:stand"); });
+      bjNewBtn.addEventListener("click", () => { beep("tap"); if (socket && socket.connected) socket.emit("bj:new"); });
 
       const rlBetTypeEl = document.getElementById("rlBetType");
       const rlNumberWrap = document.getElementById("rlNumberWrap");
@@ -680,16 +902,23 @@ Trà sữa</textarea>
       const rlResultEl = document.getElementById("rlResult");
       const rlGridEl = document.getElementById("rlGrid");
       const rlHistoryEl = document.getElementById("rlHistory");
-
       const rlWinRewardsEl = document.getElementById("rlWinRewards");
       const rlLoseRewardsEl = document.getElementById("rlLoseRewards");
 
-      const redNums = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+      bindLock(rlWinRewardsEl, "rlWinRewards");
+      bindLock(rlLoseRewardsEl, "rlLoseRewards");
 
-      function rlColor(n) {
-        if (n === 0) return "green";
-        return redNums.has(n) ? "red" : "black";
-      }
+      rlWinRewardsEl.addEventListener("input", debounce(() => {
+        if (applying.has("rlWinRewards")) return;
+        sendState("rlWinRewards", rlWinRewardsEl.value);
+      }, 140));
+      rlLoseRewardsEl.addEventListener("input", debounce(() => {
+        if (applying.has("rlLoseRewards")) return;
+        sendState("rlLoseRewards", rlLoseRewardsEl.value);
+      }, 140));
+
+      const redNums = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+      function rlColor(n) { if (n === 0) return "green"; return redNums.has(n) ? "red" : "black"; }
 
       function rlBuildGrid() {
         rlGridEl.innerHTML = "";
@@ -701,102 +930,211 @@ Trà sữa</textarea>
           rlGridEl.appendChild(cell);
         }
       }
-
       function rlHighlight(n) {
         [...rlGridEl.querySelectorAll(".roulette-cell")].forEach(c => c.classList.remove("active"));
         const hit = rlGridEl.querySelector(`.roulette-cell[data-num="${n}"]`);
         if (hit) hit.classList.add("active");
       }
+      rlBuildGrid();
 
-      function rlBetWin(betType, betNumber, rolled) {
-        if (betType === "number") return rolled === betNumber;
-        if (rolled === 0) return false;
-        switch (betType) {
-          case "red": return rlColor(rolled) === "red";
-          case "black": return rlColor(rolled) === "black";
-          case "odd": return rolled % 2 === 1;
-          case "even": return rolled % 2 === 0;
-          case "low": return rolled >= 1 && rolled <= 18;
-          case "high": return rolled >= 19 && rolled <= 36;
-          default: return false;
-        }
-      }
-
-      function rlSpinLocal() {
-        const betType = rlBetTypeEl.value;
-        const betNumber = Math.max(0, Math.min(36, Number(rlNumberEl.value || 0)));
-        const rolled = randInt(37);
-        const win = rlBetWin(betType, betNumber, rolled);
-        const reward = win ? pickFromTextarea(rlWinRewardsEl) : pickFromTextarea(rlLoseRewardsEl);
-
-        rlHighlight(rolled);
-
-        const betLabelMap = {
-          red: "ĐỎ",
-          black: "ĐEN",
-          odd: "LẺ",
-          even: "CHẴN",
-          low: "1–18",
-          high: "19–36",
-          number: `SỐ ${betNumber}`
-        };
-        const betLabel = betLabelMap[betType] ?? betType;
-
-        rlResultEl.textContent = `Ra ${rolled} ${rlColor(rolled).toUpperCase()} | ${betLabel} | ${win ? "TRÚNG" : "TRẬT"} | ${reward}`;
-        addHistory(rlHistoryEl, `Local: ${rolled} ${win ? "W" : "L"} ${reward}`);
-      }
-
-      rlBetTypeEl.addEventListener("change", () => {
+      function updateRlNumberWrap() {
         rlNumberWrap.style.display = (rlBetTypeEl.value === "number") ? "block" : "none";
+      }
+      rlBetTypeEl.addEventListener("change", () => {
+        beep("tap");
+        updateRlNumberWrap();
+        if (!myPlayerId) return;
+        sendState(`rlBet.${myPlayerId}.betType`, rlBetTypeEl.value);
       });
+      rlNumberEl.addEventListener("input", debounce(() => {
+        if (!myPlayerId) return;
+        sendState(`rlBet.${myPlayerId}.betNumber`, Number(rlNumberEl.value || 0));
+      }, 120));
 
-      rlSpinBtn.addEventListener("click", () => {
-        if (socket && socket.connected) {
-          socket.emit("rl:spin", {
-            betType: rlBetTypeEl.value,
-            betNumber: Number(rlNumberEl.value || 0),
-            winRewards: parseLines(rlWinRewardsEl.value),
-            loseRewards: parseLines(rlLoseRewardsEl.value)
-          });
-        } else {
-          rlSpinLocal();
-        }
-      });
-
+      rlSpinBtn.addEventListener("click", () => { beep("spin"); if (socket && socket.connected) socket.emit("rl:spin"); });
       rlResetBtn.addEventListener("click", () => {
+        beep("tap");
         rlResultEl.textContent = "—";
         rlHistoryEl.innerHTML = "";
         rlHighlight(-1);
       });
 
-      if (socket) {
-        socket.on("rl:result", data => {
-          const betType = data.betType;
-          const betNumber = data.betNumber;
-          const rolled = data.rolled;
-          const color = String(data.color || "").toUpperCase();
-          const win = data.win;
-          const reward = data.reward;
-
-          rlHighlight(rolled);
-
-          const betLabelMap = {
-            red: "ĐỎ",
-            black: "ĐEN",
-            odd: "LẺ",
-            even: "CHẴN",
-            low: "1–18",
-            high: "19–36",
-            number: `SỐ ${betNumber}`
-          };
-          const betLabel = betLabelMap[betType] ?? betType;
-
-          rlResultEl.textContent = `Ra ${rolled} ${color} | ${betLabel} | ${win ? "TRÚNG" : "TRẬT"} | ${reward}`;
-          addHistory(rlHistoryEl, `${who(data.by)}: ${rolled} ${win ? "W" : "L"} ${reward}`);
-        });
+      function animateRouletteThen(final) {
+        rlSpinBtn.disabled = true;
+        let k = 0;
+        const steps = 20;
+        const timer = setInterval(() => {
+          k++;
+          rlHighlight(Math.floor(Math.random() * 37));
+          if (k >= steps) {
+            clearInterval(timer);
+            rlSpinBtn.disabled = false;
+            final();
+          }
+        }, 45);
       }
 
-      rlBuildGrid();
+      function setResult(el, text) {
+        el.textContent = text;
+        el.classList.remove("pop");
+        void el.offsetWidth;
+        el.classList.add("pop");
+      }
+
+      lockModeEl.addEventListener("change", () => {
+        applyLockState();
+        toast("Lock mode", lockModeEl.checked ? "Bật (tránh đè nhau)" : "Tắt (ai cũng sửa được)");
+      });
+
+      try {
+        socket = io({ query: { room }, transports: ["websocket"] });
+        socket.on("connect", () => { mpStatusEl.textContent = "Online"; toast("Kết nối", "Đã vào phòng"); });
+        socket.on("disconnect", () => { mpStatusEl.textContent = "Offline"; toast("Mất kết nối", "Render có thể đang sleep, thử tải lại"); });
+
+        socket.on("init", data => {
+          myPlayerId = data.playerId || 0;
+          playerCodeEl.textContent = myPlayerId ? `P${myPlayerId}` : "Khách";
+
+          if (data.state) {
+            const s = data.state;
+
+            applyControlValue(wheelItemsEl, s.wheelItems, "wheelItems");
+            applyControlValue(wheelSpeedEl, s.wheelSpeed, "wheelSpeed");
+            wheelParseItems(); wheelDraw();
+
+            applyControlValue(txWinRewardsEl, s.txWinRewards, "txWinRewards");
+            applyControlValue(txLoseRewardsEl, s.txLoseRewards, "txLoseRewards");
+
+            applyControlValue(bjWinRewardsEl, s.bjWinRewards, "bjWinRewards");
+            applyControlValue(bjPushRewardsEl, s.bjPushRewards, "bjPushRewards");
+            applyControlValue(bjLoseRewardsEl, s.bjLoseRewards, "bjLoseRewards");
+
+            applyControlValue(rlWinRewardsEl, s.rlWinRewards, "rlWinRewards");
+            applyControlValue(rlLoseRewardsEl, s.rlLoseRewards, "rlLoseRewards");
+
+            const tab = s.tab || "wheel";
+            setTab(tab, true);
+
+            if (myPlayerId) {
+              const pick = (s.txPick && s.txPick[myPlayerId]) ? s.txPick[myPlayerId] : "tai";
+              txPickEl.value = pick;
+
+              const rb = (s.rlBet && s.rlBet[myPlayerId]) ? s.rlBet[myPlayerId] : { betType: "red", betNumber: 7 };
+              rlBetTypeEl.value = rb.betType || "red";
+              rlNumberEl.value = String(rb.betNumber ?? 7);
+              updateRlNumberWrap();
+            }
+          }
+
+          if (data.bj) applyBjState(data.bj, true);
+
+          locks = data.locks || {};
+          applyLockState();
+
+          if (lockModeEl.checked) {
+            bindLock(wheelItemsEl, "wheelItems");
+            bindLock(wheelSpeedEl, "wheelSpeed");
+            bindLock(txWinRewardsEl, "txWinRewards");
+            bindLock(txLoseRewardsEl, "txLoseRewards");
+            bindLock(bjWinRewardsEl, "bjWinRewards");
+            bindLock(bjPushRewardsEl, "bjPushRewards");
+            bindLock(bjLoseRewardsEl, "bjLoseRewards");
+            bindLock(rlWinRewardsEl, "rlWinRewards");
+            bindLock(rlLoseRewardsEl, "rlLoseRewards");
+          }
+        });
+
+        socket.on("presence", data => {
+          const ps = (data.players || []).map(p => `P${p}`).join(", ");
+          presenceEl.textContent = ps || "—";
+        });
+
+        socket.on("lock:state", data => {
+          locks = data.locks || {};
+          applyLockState();
+        });
+
+        socket.on("state:set", d => {
+          const f = d.field;
+          const v = d.value;
+
+          if (f === "tab") setTab(v, true);
+          if (f === "wheelItems") { applyControlValue(wheelItemsEl, v, "wheelItems"); wheelParseItems(); wheelDraw(); }
+          if (f === "wheelSpeed") { applyControlValue(wheelSpeedEl, v, "wheelSpeed"); }
+
+          if (f === "txWinRewards") applyControlValue(txWinRewardsEl, v, "txWinRewards");
+          if (f === "txLoseRewards") applyControlValue(txLoseRewardsEl, v, "txLoseRewards");
+
+          if (f === "bjWinRewards") applyControlValue(bjWinRewardsEl, v, "bjWinRewards");
+          if (f === "bjPushRewards") applyControlValue(bjPushRewardsEl, v, "bjPushRewards");
+          if (f === "bjLoseRewards") applyControlValue(bjLoseRewardsEl, v, "bjLoseRewards");
+
+          if (f === "rlWinRewards") applyControlValue(rlWinRewardsEl, v, "rlWinRewards");
+          if (f === "rlLoseRewards") applyControlValue(rlLoseRewardsEl, v, "rlLoseRewards");
+
+          if (myPlayerId && f === `txPick.${myPlayerId}`) txPickEl.value = v;
+
+          if (myPlayerId && f === `rlBet.${myPlayerId}.betType`) { rlBetTypeEl.value = v; updateRlNumberWrap(); }
+          if (myPlayerId && f === `rlBet.${myPlayerId}.betNumber`) rlNumberEl.value = String(v);
+        });
+
+        socket.on("ui:tab", d => {
+          toast("Tab", `${who(d.by)} mở ${d.tab}`);
+        });
+
+        socket.on("wheel:spinResult", data => {
+          applyControlValue(wheelItemsEl, (data.items || []).join("\n"), "wheelItems");
+          applyControlValue(wheelSpeedEl, data.speed || 6, "wheelSpeed");
+          wheelParseItems(); wheelDraw();
+
+          const idx = data.targetIndex;
+          const v = (wheelItems[idx] || "—");
+          addHistory(wheelHistoryEl, `${who(data.by)} quay: ${v}`);
+          setResult(wheelResultEl, "…");
+          wheelSpinTo(idx);
+        });
+
+        socket.on("tx:result", data => {
+          const outLabel = (data.out === "tai") ? "TÀI" : "XỈU";
+          const pickLabel = (data.pick === "tai") ? "TÀI" : "XỈU";
+          const line = `${diceFaces[data.d1-1]} ${diceFaces[data.d2-1]} ${diceFaces[data.d3-1]} | ${data.sum} | ${outLabel} | ${pickLabel} | ${data.win ? "THẮNG" : "THUA"} | ${data.reward}`;
+          animateDiceThen(() => {
+            setResult(txResultEl, line);
+            addHistory(txHistoryEl, `${who(data.by)}: ${data.sum} ${outLabel} ${data.win ? "W" : "L"} ${data.reward}`);
+            if (data.win) { confettiBurst(0.9); beep("win"); }
+            else { beep("tap"); }
+          }, txSpeedEl.value);
+        });
+
+        socket.on("rl:result", data => {
+          animateRouletteThen(() => {
+            rlHighlight(data.rolled);
+            const betLabelMap = {
+              red: "ĐỎ",
+              black: "ĐEN",
+              odd: "LẺ",
+              even: "CHẴN",
+              low: "1–18",
+              high: "19–36",
+              number: `SỐ ${data.betNumber}`
+            };
+            const betLabel = betLabelMap[data.betType] || data.betType;
+
+            const text = `Ra ${data.rolled} ${String(data.color).toUpperCase()} | ${betLabel} | ${data.win ? "TRÚNG" : "TRẬT"} | ${data.reward}`;
+            setResult(rlResultEl, text);
+            addHistory(rlHistoryEl, `${who(data.by)}: ${data.rolled} ${data.win ? "W" : "L"} ${data.reward}`);
+            if (data.win) { confettiBurst(1.0); beep("win"); }
+            else { beep("tap"); }
+          });
+        });
+
+        socket.on("bj:state", s => {
+          applyBjState(s, false);
+        });
+
+      } catch {
+        mpStatusEl.textContent = "Offline";
+      }
     })();
   </script>
 </body>
