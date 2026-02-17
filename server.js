@@ -19,24 +19,20 @@ function clamp(n, a, b) {
   if (!Number.isFinite(n)) return a;
   return Math.max(a, Math.min(b, n));
 }
-function safeLines(arr, maxLines, maxLen) {
-  if (!Array.isArray(arr)) return [];
-  return arr
-    .map(x => String(x ?? "").trim())
-    .filter(Boolean)
-    .slice(0, maxLines)
-    .map(s => (s.length > maxLen ? s.slice(0, maxLen) : s));
+function parseLines(text) {
+  return String(text || "")
+    .split("\n")
+    .map(s => s.trim())
+    .filter(Boolean);
 }
 function pick(arr) {
   if (!arr || arr.length === 0) return "—";
   return arr[crypto.randomInt(arr.length)];
 }
-
-function newBjState() {
-  return { deck: [], player: [], dealer: [], inRound: false, dealerHidden: true, turn: 1, lastOutcome: null, lastReward: "—" };
-}
-function bjSnapshot(s) {
-  return { player: s.player, dealer: s.dealer, inRound: s.inRound, dealerHidden: s.dealerHidden, turn: s.turn, lastOutcome: s.lastOutcome, lastReward: s.lastReward };
+function safeText(s, maxLen) {
+  s = String(s ?? "");
+  if (s.length > maxLen) s = s.slice(0, maxLen);
+  return s;
 }
 
 const suits = ["♠","♥","♦","♣"];
@@ -71,13 +67,6 @@ function isBlackjack(hand) {
 function dealerPlay(state) {
   while (handValue(state.dealer) < 17) state.dealer.push(state.deck.pop());
 }
-function endBjRound(state, outcome, reward) {
-  state.inRound = false;
-  state.dealerHidden = false;
-  state.lastOutcome = outcome;
-  state.lastReward = reward ?? "—";
-  state.turn = state.turn === 1 ? 2 : 1;
-}
 
 const redNums = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 function rlColor(n) {
@@ -98,50 +87,252 @@ function rlBetWin(betType, betNumber, rolled) {
   }
 }
 
+function newBjState() {
+  return {
+    deck: [],
+    player: [],
+    dealer: [],
+    inRound: false,
+    dealerHidden: true,
+    turn: 1,
+    lastOutcome: null,
+    lastReward: "—"
+  };
+}
+function bjSnapshot(s) {
+  return {
+    player: s.player,
+    dealer: s.dealer,
+    inRound: s.inRound,
+    dealerHidden: s.dealerHidden,
+    turn: s.turn,
+    lastOutcome: s.lastOutcome,
+    lastReward: s.lastReward
+  };
+}
+function endBjRound(state, outcome, reward) {
+  state.inRound = false;
+  state.dealerHidden = false;
+  state.lastOutcome = outcome;
+  state.lastReward = reward ?? "—";
+  state.turn = state.turn === 1 ? 2 : 1;
+}
+
+function defaultState() {
+  return {
+    tab: "wheel",
+
+    wheelItems: `10,000₫
+20,000₫
+50,000₫
+100,000₫
+200,000₫
+500,000₫
+1,000,000₫
+Nhân đôi
+Thêm lượt`,
+    wheelSpeed: 6,
+
+    txWinRewards: `50,000₫
+100,000₫
+200,000₫
+Trà sữa`,
+    txLoseRewards: `10,000₫
+20,000₫
+Ôm 1 cái`,
+
+    bjWinRewards: `100,000₫
+200,000₫
+500,000₫`,
+    bjPushRewards: `50,000₫
+Trà sữa`,
+    bjLoseRewards: `10,000₫
+20,000₫`,
+
+    rlWinRewards: `100,000₫
+200,000₫
+500,000₫`,
+    rlLoseRewards: `10,000₫
+20,000₫`,
+
+    txPick: { 1: "tai", 2: "xiu" },
+    rlBet: {
+      1: { betType: "red", betNumber: 7 },
+      2: { betType: "black", betNumber: 7 }
+    }
+  };
+}
+
+const FIELD_RULES = {
+  tab: v => ["wheel", "taixiu", "blackjack", "roulette"].includes(v) ? v : "wheel",
+
+  wheelItems: v => safeText(v, 4000),
+  wheelSpeed: v => clamp(v, 1, 10),
+
+  txWinRewards: v => safeText(v, 4000),
+  txLoseRewards: v => safeText(v, 4000),
+
+  bjWinRewards: v => safeText(v, 4000),
+  bjPushRewards: v => safeText(v, 4000),
+  bjLoseRewards: v => safeText(v, 4000),
+
+  rlWinRewards: v => safeText(v, 4000),
+  rlLoseRewards: v => safeText(v, 4000),
+
+  "txPick.1": v => (v === "tai" ? "tai" : "xiu"),
+  "txPick.2": v => (v === "tai" ? "tai" : "xiu"),
+
+  "rlBet.1.betType": v => ["red","black","odd","even","low","high","number"].includes(v) ? v : "red",
+  "rlBet.2.betType": v => ["red","black","odd","even","low","high","number"].includes(v) ? v : "black",
+  "rlBet.1.betNumber": v => clamp(v, 0, 36),
+  "rlBet.2.betNumber": v => clamp(v, 0, 36)
+};
+
 function getRoom(roomId) {
-  if (!rooms.has(roomId)) rooms.set(roomId, { players: new Map(), bj: newBjState() });
+  if (!rooms.has(roomId)) {
+    rooms.set(roomId, {
+      players: new Map(),
+      locks: new Map(),
+      state: defaultState(),
+      bj: newBjState()
+    });
+  }
   return rooms.get(roomId);
 }
+
 function allocPlayerId(room) {
   const used = new Set(room.players.values());
   if (!used.has(1)) return 1;
   if (!used.has(2)) return 2;
   return 0;
 }
-function playerIdOf(room, socketId) {
-  return room.players.get(socketId) || 0;
+
+function broadcastPresence(roomId, room) {
+  const ids = [...room.players.values()].filter(Boolean).sort((a,b)=>a-b);
+  io.to(roomId).emit("presence", { players: ids });
 }
-function mustBeTurnPlayer(room, socketId) {
-  const pid = playerIdOf(room, socketId);
-  return pid !== 0 && pid === room.bj.turn;
+
+function lockOwnerPid(room, field) {
+  const ownerSocketId = room.locks.get(field);
+  if (!ownerSocketId) return 0;
+  return room.players.get(ownerSocketId) || 0;
+}
+
+function releaseLocksBySocket(room, socketId) {
+  for (const [field, owner] of room.locks.entries()) {
+    if (owner === socketId) room.locks.delete(field);
+  }
+}
+
+function setByPath(obj, path, value) {
+  const parts = path.split(".");
+  let cur = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const k = parts[i];
+    if (!(k in cur)) cur[k] = {};
+    cur = cur[k];
+  }
+  cur[parts[parts.length - 1]] = value;
+}
+
+function getByPath(obj, path) {
+  const parts = path.split(".");
+  let cur = obj;
+  for (const p of parts) {
+    if (!cur || typeof cur !== "object") return undefined;
+    cur = cur[p];
+  }
+  return cur;
 }
 
 io.on("connection", socket => {
-  const roomId = String(socket.handshake.query.room || "demo").slice(0, 32);
+  const roomId = safeText(socket.handshake.query.room || "demo", 32);
   const room = getRoom(roomId);
 
   const pid = allocPlayerId(room);
   room.players.set(socket.id, pid);
 
   socket.join(roomId);
-  socket.emit("init", { room: roomId, playerId: pid, bj: bjSnapshot(room.bj) });
+
+  socket.emit("init", {
+    room: roomId,
+    playerId: pid,
+    state: room.state,
+    bj: bjSnapshot(room.bj),
+    locks: Object.fromEntries([...room.locks.entries()].map(([f, sid]) => [f, room.players.get(sid) || 0]))
+  });
+
+  broadcastPresence(roomId, room);
+  io.to(roomId).emit("lock:state", { locks: Object.fromEntries([...room.locks.entries()].map(([f, sid]) => [f, room.players.get(sid) || 0])) });
 
   socket.on("disconnect", () => {
+    releaseLocksBySocket(room, socket.id);
     room.players.delete(socket.id);
+    io.to(roomId).emit("lock:state", { locks: Object.fromEntries([...room.locks.entries()].map(([f, sid]) => [f, room.players.get(sid) || 0])) });
+    broadcastPresence(roomId, room);
     if (room.players.size === 0) rooms.delete(roomId);
   });
 
-  socket.on("wheel:spin", payload => {
-    const items = safeLines(payload?.items, 80, 40);
-    const speed = clamp(payload?.speed, 1, 10);
-    const targetIndex = items.length ? crypto.randomInt(items.length) : 0;
-    io.to(roomId).emit("wheel:spinResult", { items, speed, targetIndex, by: pid });
+  socket.on("state:set", payload => {
+    const field = safeText(payload?.field || "", 64);
+    if (!FIELD_RULES[field]) return;
+
+    const lockedBy = lockOwnerPid(room, field);
+    if (lockedBy && room.locks.get(field) !== socket.id) return;
+
+    const value = FIELD_RULES[field](payload?.value);
+
+    if (field.includes(".")) {
+      setByPath(room.state, field, value);
+    } else {
+      room.state[field] = value;
+    }
+
+    socket.to(roomId).emit("state:set", { field, value, by: pid });
   });
 
-  socket.on("tx:roll", payload => {
-    const pickSide = payload?.pick === "tai" ? "tai" : "xiu";
-    const winRewards = safeLines(payload?.winRewards, 80, 60);
-    const loseRewards = safeLines(payload?.loseRewards, 80, 60);
+  socket.on("lock:set", payload => {
+    const field = safeText(payload?.field || "", 64);
+    const locked = !!payload?.locked;
+    if (!FIELD_RULES[field]) return;
+
+    if (locked) {
+      const curOwner = room.locks.get(field);
+      if (!curOwner || curOwner === socket.id) {
+        room.locks.set(field, socket.id);
+      }
+    } else {
+      const curOwner = room.locks.get(field);
+      if (curOwner === socket.id) room.locks.delete(field);
+    }
+
+    io.to(roomId).emit("lock:state", {
+      locks: Object.fromEntries([...room.locks.entries()].map(([f, sid]) => [f, room.players.get(sid) || 0]))
+    });
+  });
+
+  socket.on("ui:tab", payload => {
+    const tab = FIELD_RULES.tab(String(payload?.tab || ""));
+    const lockedBy = lockOwnerPid(room, "tab");
+    if (lockedBy && room.locks.get("tab") !== socket.id) return;
+    room.state.tab = tab;
+    io.to(roomId).emit("ui:tab", { tab, by: pid });
+    socket.to(roomId).emit("state:set", { field: "tab", value: tab, by: pid });
+  });
+
+  socket.on("wheel:spin", () => {
+    const items = parseLines(room.state.wheelItems);
+    const safeItems = items.length >= 2 ? items : ["10,000₫", "20,000₫"];
+    const speed = clamp(room.state.wheelSpeed, 1, 10);
+    const targetIndex = crypto.randomInt(safeItems.length);
+    io.to(roomId).emit("wheel:spinResult", { items: safeItems, speed, targetIndex, by: pid });
+  });
+
+  socket.on("tx:roll", () => {
+    const pickSide = (room.state.txPick?.[pid] === "tai") ? "tai" : "xiu";
+
+    const winRewards = parseLines(room.state.txWinRewards);
+    const loseRewards = parseLines(room.state.txLoseRewards);
 
     const d1 = crypto.randomInt(1, 7);
     const d2 = crypto.randomInt(1, 7);
@@ -154,11 +345,13 @@ io.on("connection", socket => {
     io.to(roomId).emit("tx:result", { d1, d2, d3, sum, out, pick: pickSide, win, reward, by: pid });
   });
 
-  socket.on("rl:spin", payload => {
-    const betType = String(payload?.betType || "red");
-    const betNumber = clamp(payload?.betNumber, 0, 36);
-    const winRewards = safeLines(payload?.winRewards, 80, 60);
-    const loseRewards = safeLines(payload?.loseRewards, 80, 60);
+  socket.on("rl:spin", () => {
+    const b = room.state.rlBet?.[pid] || { betType: "red", betNumber: 7 };
+    const betType = ["red","black","odd","even","low","high","number"].includes(b.betType) ? b.betType : "red";
+    const betNumber = clamp(b.betNumber, 0, 36);
+
+    const winRewards = parseLines(room.state.rlWinRewards);
+    const loseRewards = parseLines(room.state.rlLoseRewards);
 
     const rolled = crypto.randomInt(37);
     const win = rlBetWin(betType, betNumber, rolled);
@@ -167,13 +360,17 @@ io.on("connection", socket => {
     io.to(roomId).emit("rl:result", { betType, betNumber, rolled, color: rlColor(rolled), win, reward, by: pid });
   });
 
+  function mustBeTurnPlayer() {
+    return pid !== 0 && pid === room.bj.turn;
+  }
+
   socket.on("bj:new", () => {
     room.bj = newBjState();
     io.to(roomId).emit("bj:state", bjSnapshot(room.bj));
   });
 
-  socket.on("bj:deal", payload => {
-    if (!mustBeTurnPlayer(room, socket.id)) return;
+  socket.on("bj:deal", () => {
+    if (!mustBeTurnPlayer()) return;
 
     const state = room.bj;
     state.deck = shuffle(buildDeck());
@@ -184,9 +381,9 @@ io.on("connection", socket => {
     state.lastOutcome = null;
     state.lastReward = "—";
 
-    const winRewards = safeLines(payload?.winRewards, 80, 60);
-    const pushRewards = safeLines(payload?.pushRewards, 80, 60);
-    const loseRewards = safeLines(payload?.loseRewards, 80, 60);
+    const winRewards = parseLines(room.state.bjWinRewards);
+    const pushRewards = parseLines(room.state.bjPushRewards);
+    const loseRewards = parseLines(room.state.bjLoseRewards);
 
     const pBJ = isBlackjack(state.player);
     const dBJ = isBlackjack(state.dealer);
@@ -199,14 +396,14 @@ io.on("connection", socket => {
     io.to(roomId).emit("bj:state", bjSnapshot(state));
   });
 
-  socket.on("bj:hit", payload => {
-    if (!mustBeTurnPlayer(room, socket.id)) return;
+  socket.on("bj:hit", () => {
+    if (!mustBeTurnPlayer()) return;
     const state = room.bj;
     if (!state.inRound) return;
 
     state.player.push(state.deck.pop());
 
-    const loseRewards = safeLines(payload?.loseRewards, 80, 60);
+    const loseRewards = parseLines(room.state.bjLoseRewards);
 
     if (handValue(state.player) > 21) {
       state.dealerHidden = false;
@@ -217,8 +414,8 @@ io.on("connection", socket => {
     io.to(roomId).emit("bj:state", bjSnapshot(state));
   });
 
-  socket.on("bj:stand", payload => {
-    if (!mustBeTurnPlayer(room, socket.id)) return;
+  socket.on("bj:stand", () => {
+    if (!mustBeTurnPlayer()) return;
     const state = room.bj;
     if (!state.inRound) return;
 
@@ -228,9 +425,9 @@ io.on("connection", socket => {
     const p = handValue(state.player);
     const d = handValue(state.dealer);
 
-    const winRewards = safeLines(payload?.winRewards, 80, 60);
-    const pushRewards = safeLines(payload?.pushRewards, 80, 60);
-    const loseRewards = safeLines(payload?.loseRewards, 80, 60);
+    const winRewards = parseLines(room.state.bjWinRewards);
+    const pushRewards = parseLines(room.state.bjPushRewards);
+    const loseRewards = parseLines(room.state.bjLoseRewards);
 
     let outcome = "push";
     if (d > 21) outcome = "win";
