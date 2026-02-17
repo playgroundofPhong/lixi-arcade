@@ -621,13 +621,14 @@
       const wheelHistoryEl = document.getElementById("wheelHistory");
 
       const WHEEL_SEGMENTS = [
-        { label:"x0",   mult:0.0,  weight:35 },
-        { label:"x0.5", mult:0.5,  weight:20 },
-        { label:"x1",   mult:1.0,  weight:25 },
-        { label:"x2",   mult:2.0,  weight:12 },
-        { label:"x3",   mult:3.0,  weight:6  },
-        { label:"x10",  mult:10.0, weight:2  }
-      ];
+  { label:"x0",   mult:0.0, weight:0  },
+  { label:"x0.5", mult:0.5, weight:20 },
+  { label:"x1",   mult:1.0, weight:20 },
+  { label:"x1.5", mult:1.5, weight:20 },
+  { label:"x2",   mult:2.0, weight:20 },
+  { label:"x2.5", mult:2.5, weight:20 }
+];
+
 
       let wheelAngle = 0;
       let wheelSpinning = false;
