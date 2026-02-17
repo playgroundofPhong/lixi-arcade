@@ -14,30 +14,109 @@ const PORT = process.env.PORT || 8080;
 
 const rooms = new Map();
 
-function clamp(n, a, b) {
-  n = Number(n);
+const START_BALANCE = 10000;   // chip demo
+const MIN_BET = 10;
+const MAX_BET = 500000;
+
+function clampInt(n, a, b) {
+  n = Math.floor(Number(n));
   if (!Number.isFinite(n)) return a;
   return Math.max(a, Math.min(b, n));
-}
-function parseLines(text) {
-  return String(text || "")
-    .split("\n")
-    .map(s => s.trim())
-    .filter(Boolean);
-}
-function pick(arr) {
-  if (!arr || arr.length === 0) return "—";
-  return arr[crypto.randomInt(arr.length)];
 }
 function safeText(s, maxLen) {
   s = String(s ?? "");
   if (s.length > maxLen) s = s.slice(0, maxLen);
   return s;
 }
+function allocPlayerId(room) {
+  const used = new Set(room.players.values());
+  if (!used.has(1)) return 1;
+  if (!used.has(2)) return 2;
+  return 0; // spectator
+}
+function broadcastPresence(roomId, room) {
+  const ids = [...room.players.values()].filter(Boolean).sort((a, b) => a - b);
+  io.to(roomId).emit("presence", { players: ids });
+}
+function ensureBalance(room, pid) {
+  if (!room.balances[pid]) room.balances[pid] = START_BALANCE;
+}
+function canBet(room, pid, bet) {
+  ensureBalance(room, pid);
+  return bet >= MIN_BET && bet <= MAX_BET && room.balances[pid] >= bet;
+}
+function settle(room, pid, bet, payoutTotal) {
+  // balance = balance - bet + payoutTotal
+  ensureBalance(room, pid);
+  room.balances[pid] = clampInt(room.balances[pid] - bet + payoutTotal, 0, 10_000_000_000);
+  return room.balances[pid];
+}
+function roomSnapshot(room) {
+  return {
+    balances: room.balances,
+    player: room.player,
+    bj: bjSnapshot(room.bj),
+    limits: { MIN_BET, MAX_BET, START_BALANCE }
+  };
+}
 
+// ===== Wheel (bonus wheel / slot-like) =====
+// "mult" là hệ số trả về TỔNG (return). Ví dụ mult=2 => trả 2x cược (lãi 1x).
+// RTP ~ 97% với weights dưới đây (house edge nhẹ).
+const WHEEL_SEGMENTS = [
+  { label: "x0",   mult: 0.0,  weight: 35 },
+  { label: "x0.5", mult: 0.5,  weight: 20 },
+  { label: "x1",   mult: 1.0,  weight: 25 },
+  { label: "x2",   mult: 2.0,  weight: 12 },
+  { label: "x3",   mult: 3.0,  weight: 6  },
+  { label: "x10",  mult: 10.0, weight: 2  }
+];
+const WHEEL_TOTAL_WEIGHT = WHEEL_SEGMENTS.reduce((a, s) => a + s.weight, 0);
+function wheelPickIndex() {
+  let r = crypto.randomInt(WHEEL_TOTAL_WEIGHT);
+  for (let i = 0; i < WHEEL_SEGMENTS.length; i++) {
+    r -= WHEEL_SEGMENTS[i].weight;
+    if (r < 0) return i;
+  }
+  return 0;
+}
+
+// ===== Tai/Xiu (Sic Bo) =====
+function rollDie() { return crypto.randomInt(1, 7); }
+function isTriple(d1, d2, d3) { return d1 === d2 && d2 === d3; }
+function txOutcome(sum) {
+  // Big/Tai: 11–17, Small/Xiu: 4–10
+  return (sum >= 11) ? "tai" : "xiu";
+}
+
+// ===== Roulette (European 0–36) =====
+const redNums = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+function rlColor(n) {
+  if (n === 0) return "green";
+  return redNums.has(n) ? "red" : "black";
+}
+function rlBetWin(betType, betNumber, rolled) {
+  if (betType === "number") return rolled === betNumber;
+  if (rolled === 0) return false;
+  switch (betType) {
+    case "red": return rlColor(rolled) === "red";
+    case "black": return rlColor(rolled) === "black";
+    case "odd": return rolled % 2 === 1;
+    case "even": return rolled % 2 === 0;
+    case "low": return rolled >= 1 && rolled <= 18;
+    case "high": return rolled >= 19 && rolled <= 36;
+    default: return false;
+  }
+}
+function rlPayoutTotal(betType, bet, win) {
+  if (!win) return 0;
+  if (betType === "number") return bet * 36; // 35:1 + stake
+  return bet * 2; // even money 1:1 + stake
+}
+
+// ===== Blackjack =====
 const suits = ["♠","♥","♦","♣"];
 const ranks = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
-
 function buildDeck() {
   const d = [];
   for (const s of suits) for (const r of ranks) d.push({ r, s });
@@ -67,26 +146,6 @@ function isBlackjack(hand) {
 function dealerPlay(state) {
   while (handValue(state.dealer) < 17) state.dealer.push(state.deck.pop());
 }
-
-const redNums = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
-function rlColor(n) {
-  if (n === 0) return "green";
-  return redNums.has(n) ? "red" : "black";
-}
-function rlBetWin(betType, betNumber, rolled) {
-  if (betType === "number") return rolled === betNumber;
-  if (rolled === 0) return false;
-  switch (betType) {
-    case "red": return rlColor(rolled) === "red";
-    case "black": return rlColor(rolled) === "black";
-    case "odd": return rolled % 2 === 1;
-    case "even": return rolled % 2 === 0;
-    case "low": return rolled >= 1 && rolled <= 18;
-    case "high": return rolled >= 19 && rolled <= 36;
-    default: return false;
-  }
-}
-
 function newBjState() {
   return {
     deck: [],
@@ -95,8 +154,10 @@ function newBjState() {
     inRound: false,
     dealerHidden: true,
     turn: 1,
+    wagerPid: 1,
+    wager: 0,
     lastOutcome: null,
-    lastReward: "—"
+    lastProfit: 0
   };
 }
 function bjSnapshot(s) {
@@ -106,143 +167,49 @@ function bjSnapshot(s) {
     inRound: s.inRound,
     dealerHidden: s.dealerHidden,
     turn: s.turn,
+    wagerPid: s.wagerPid,
+    wager: s.wager,
     lastOutcome: s.lastOutcome,
-    lastReward: s.lastReward
+    lastProfit: s.lastProfit
   };
 }
-function endBjRound(state, outcome, reward) {
+function endBjRound(room, outcome, bet, payoutTotal) {
+  const state = room.bj;
   state.inRound = false;
   state.dealerHidden = false;
   state.lastOutcome = outcome;
-  state.lastReward = reward ?? "—";
-  state.turn = state.turn === 1 ? 2 : 1;
+  state.lastProfit = payoutTotal - bet; // lãi/lỗ
+  state.wager = 0;
+
+  // đổi lượt
+  state.turn = (state.turn === 1) ? 2 : 1;
+  state.wagerPid = state.turn;
 }
 
-function defaultState() {
+function defaultPlayerState() {
   return {
     tab: "wheel",
-
-    wheelItems: `10,000₫
-20,000₫
-50,000₫
-100,000₫
-200,000₫
-500,000₫
-1,000,000₫
-Nhân đôi
-Thêm lượt`,
-    wheelSpeed: 6,
-
-    txWinRewards: `50,000₫
-100,000₫
-200,000₫
-Trà sữa`,
-    txLoseRewards: `10,000₫
-20,000₫
-Ôm 1 cái`,
-
-    bjWinRewards: `100,000₫
-200,000₫
-500,000₫`,
-    bjPushRewards: `50,000₫
-Trà sữa`,
-    bjLoseRewards: `10,000₫
-20,000₫`,
-
-    rlWinRewards: `100,000₫
-200,000₫
-500,000₫`,
-    rlLoseRewards: `10,000₫
-20,000₫`,
-
-    txPick: { 1: "tai", 2: "xiu" },
-    rlBet: {
-      1: { betType: "red", betNumber: 7 },
-      2: { betType: "black", betNumber: 7 }
-    }
+    wheelBet: 100,
+    txPick: "tai",
+    txBet: 100,
+    rlBetType: "red",
+    rlNumber: 7,
+    rlBet: 100,
+    bjBet: 200
   };
 }
-
-const FIELD_RULES = {
-  tab: v => ["wheel", "taixiu", "blackjack", "roulette"].includes(v) ? v : "wheel",
-
-  wheelItems: v => safeText(v, 4000),
-  wheelSpeed: v => clamp(v, 1, 10),
-
-  txWinRewards: v => safeText(v, 4000),
-  txLoseRewards: v => safeText(v, 4000),
-
-  bjWinRewards: v => safeText(v, 4000),
-  bjPushRewards: v => safeText(v, 4000),
-  bjLoseRewards: v => safeText(v, 4000),
-
-  rlWinRewards: v => safeText(v, 4000),
-  rlLoseRewards: v => safeText(v, 4000),
-
-  "txPick.1": v => (v === "tai" ? "tai" : "xiu"),
-  "txPick.2": v => (v === "tai" ? "tai" : "xiu"),
-
-  "rlBet.1.betType": v => ["red","black","odd","even","low","high","number"].includes(v) ? v : "red",
-  "rlBet.2.betType": v => ["red","black","odd","even","low","high","number"].includes(v) ? v : "black",
-  "rlBet.1.betNumber": v => clamp(v, 0, 36),
-  "rlBet.2.betNumber": v => clamp(v, 0, 36)
-};
 
 function getRoom(roomId) {
   if (!rooms.has(roomId)) {
     rooms.set(roomId, {
       players: new Map(),
-      locks: new Map(),
-      state: defaultState(),
-      bj: newBjState()
+      balances: { 1: START_BALANCE, 2: START_BALANCE },
+      player: { 1: defaultPlayerState(), 2: defaultPlayerState() },
+      bj: newBjState(),
+      cursors: { 1: null, 2: null }
     });
   }
   return rooms.get(roomId);
-}
-
-function allocPlayerId(room) {
-  const used = new Set(room.players.values());
-  if (!used.has(1)) return 1;
-  if (!used.has(2)) return 2;
-  return 0;
-}
-
-function broadcastPresence(roomId, room) {
-  const ids = [...room.players.values()].filter(Boolean).sort((a,b)=>a-b);
-  io.to(roomId).emit("presence", { players: ids });
-}
-
-function lockOwnerPid(room, field) {
-  const ownerSocketId = room.locks.get(field);
-  if (!ownerSocketId) return 0;
-  return room.players.get(ownerSocketId) || 0;
-}
-
-function releaseLocksBySocket(room, socketId) {
-  for (const [field, owner] of room.locks.entries()) {
-    if (owner === socketId) room.locks.delete(field);
-  }
-}
-
-function setByPath(obj, path, value) {
-  const parts = path.split(".");
-  let cur = obj;
-  for (let i = 0; i < parts.length - 1; i++) {
-    const k = parts[i];
-    if (!(k in cur)) cur[k] = {};
-    cur = cur[k];
-  }
-  cur[parts[parts.length - 1]] = value;
-}
-
-function getByPath(obj, path) {
-  const parts = path.split(".");
-  let cur = obj;
-  for (const p of parts) {
-    if (!cur || typeof cur !== "object") return undefined;
-    cur = cur[p];
-  }
-  return cur;
 }
 
 io.on("connection", socket => {
@@ -252,125 +219,208 @@ io.on("connection", socket => {
   const pid = allocPlayerId(room);
   room.players.set(socket.id, pid);
 
-  socket.join(roomId);
+  if (pid === 1 || pid === 2) {
+    ensureBalance(room, pid);
+    if (!room.player[pid]) room.player[pid] = defaultPlayerState();
+  }
 
-  socket.emit("init", {
-    room: roomId,
-    playerId: pid,
-    state: room.state,
-    bj: bjSnapshot(room.bj),
-    locks: Object.fromEntries([...room.locks.entries()].map(([f, sid]) => [f, room.players.get(sid) || 0]))
-  });
+  socket.join(roomId);
+  socket.emit("init", { room: roomId, playerId: pid, ...roomSnapshot(room) });
 
   broadcastPresence(roomId, room);
-  io.to(roomId).emit("lock:state", { locks: Object.fromEntries([...room.locks.entries()].map(([f, sid]) => [f, room.players.get(sid) || 0])) });
+  io.to(roomId).emit("state:full", roomSnapshot(room));
 
   socket.on("disconnect", () => {
-    releaseLocksBySocket(room, socket.id);
     room.players.delete(socket.id);
-    io.to(roomId).emit("lock:state", { locks: Object.fromEntries([...room.locks.entries()].map(([f, sid]) => [f, room.players.get(sid) || 0])) });
     broadcastPresence(roomId, room);
-    if (room.players.size === 0) rooms.delete(roomId);
+    if ([...room.players.values()].every(v => !v)) rooms.delete(roomId);
   });
 
-  socket.on("state:set", payload => {
-    const field = safeText(payload?.field || "", 64);
-    if (!FIELD_RULES[field]) return;
-
-    const lockedBy = lockOwnerPid(room, field);
-    if (lockedBy && room.locks.get(field) !== socket.id) return;
-
-    const value = FIELD_RULES[field](payload?.value);
-
-    if (field.includes(".")) {
-      setByPath(room.state, field, value);
-    } else {
-      room.state[field] = value;
-    }
-
-    socket.to(roomId).emit("state:set", { field, value, by: pid });
+  // ===== Cursor sync =====
+  socket.on("cursor", data => {
+    if (!(pid === 1 || pid === 2)) return;
+    const x = Math.max(0, Math.min(1, Number(data?.x)));
+    const y = Math.max(0, Math.min(1, Number(data?.y)));
+    const tab = safeText(data?.tab || "", 16);
+    room.cursors[pid] = { x, y, tab, ts: Date.now() };
+    socket.to(roomId).emit("cursor", { by: pid, x, y, tab });
   });
 
-  socket.on("lock:set", payload => {
-    const field = safeText(payload?.field || "", 64);
-    const locked = !!payload?.locked;
-    if (!FIELD_RULES[field]) return;
+  // ===== Player UI state (bets / picks / tab) =====
+  socket.on("player:set", payload => {
+    if (!(pid === 1 || pid === 2)) return;
 
-    if (locked) {
-      const curOwner = room.locks.get(field);
-      if (!curOwner || curOwner === socket.id) {
-        room.locks.set(field, socket.id);
-      }
-    } else {
-      const curOwner = room.locks.get(field);
-      if (curOwner === socket.id) room.locks.delete(field);
+    const key = safeText(payload?.key || "", 32);
+    let value = payload?.value;
+
+    const st = room.player[pid] || defaultPlayerState();
+
+    switch (key) {
+      case "tab":
+        value = ["wheel","taixiu","blackjack","roulette"].includes(value) ? value : st.tab;
+        st.tab = value;
+        break;
+
+      case "wheelBet":
+      case "txBet":
+      case "rlBet":
+      case "bjBet":
+        value = clampInt(value, MIN_BET, MAX_BET);
+        st[key] = value;
+        break;
+
+      case "txPick":
+        value = (value === "tai") ? "tai" : "xiu";
+        st.txPick = value;
+        break;
+
+      case "rlBetType":
+        value = ["red","black","odd","even","low","high","number"].includes(value) ? value : "red";
+        st.rlBetType = value;
+        break;
+
+      case "rlNumber":
+        value = clampInt(value, 0, 36);
+        st.rlNumber = value;
+        break;
+
+      default:
+        return;
     }
 
-    io.to(roomId).emit("lock:state", {
-      locks: Object.fromEntries([...room.locks.entries()].map(([f, sid]) => [f, room.players.get(sid) || 0]))
+    room.player[pid] = st;
+    io.to(roomId).emit("player:set", { by: pid, key, value });
+  });
+
+  // ===== Reset room (chỉ P1) =====
+  socket.on("room:reset", () => {
+    if (pid !== 1) return;
+    room.balances = { 1: START_BALANCE, 2: START_BALANCE };
+    room.player = { 1: defaultPlayerState(), 2: defaultPlayerState() };
+    room.bj = newBjState();
+    io.to(roomId).emit("room:reset", roomSnapshot(room));
+  });
+
+  // ===== Wheel spin =====
+  socket.on("wheel:spin", () => {
+    if (!(pid === 1 || pid === 2)) return;
+
+    const bet = clampInt(room.player[pid]?.wheelBet ?? 0, MIN_BET, MAX_BET);
+    if (!canBet(room, pid, bet)) {
+      socket.emit("error:msg", { msg: "Không đủ chip hoặc cược ngoài giới hạn." });
+      return;
+    }
+
+    const idx = wheelPickIndex();
+    const seg = WHEEL_SEGMENTS[idx];
+    const payoutTotal = Math.floor(bet * seg.mult);
+    const newBal = settle(room, pid, bet, payoutTotal);
+    const profit = payoutTotal - bet;
+
+    io.to(roomId).emit("wheel:result", {
+      by: pid,
+      bet,
+      segmentIndex: idx,
+      segment: seg,
+      payoutTotal,
+      profit,
+      balances: room.balances
     });
   });
 
-  socket.on("ui:tab", payload => {
-    const tab = FIELD_RULES.tab(String(payload?.tab || ""));
-    const lockedBy = lockOwnerPid(room, "tab");
-    if (lockedBy && room.locks.get("tab") !== socket.id) return;
-    room.state.tab = tab;
-    io.to(roomId).emit("ui:tab", { tab, by: pid });
-    socket.to(roomId).emit("state:set", { field: "tab", value: tab, by: pid });
-  });
-
-  socket.on("wheel:spin", () => {
-    const items = parseLines(room.state.wheelItems);
-    const safeItems = items.length >= 2 ? items : ["10,000₫", "20,000₫"];
-    const speed = clamp(room.state.wheelSpeed, 1, 10);
-    const targetIndex = crypto.randomInt(safeItems.length);
-    io.to(roomId).emit("wheel:spinResult", { items: safeItems, speed, targetIndex, by: pid });
-  });
-
+  // ===== Tai/Xiu roll =====
   socket.on("tx:roll", () => {
-    const pickSide = (room.state.txPick?.[pid] === "tai") ? "tai" : "xiu";
+    if (!(pid === 1 || pid === 2)) return;
 
-    const winRewards = parseLines(room.state.txWinRewards);
-    const loseRewards = parseLines(room.state.txLoseRewards);
+    const st = room.player[pid] || defaultPlayerState();
+    const bet = clampInt(st.txBet ?? 0, MIN_BET, MAX_BET);
+    const pickSide = st.txPick === "tai" ? "tai" : "xiu";
 
-    const d1 = crypto.randomInt(1, 7);
-    const d2 = crypto.randomInt(1, 7);
-    const d3 = crypto.randomInt(1, 7);
+    if (!canBet(room, pid, bet)) {
+      socket.emit("error:msg", { msg: "Không đủ chip hoặc cược ngoài giới hạn." });
+      return;
+    }
+
+    const d1 = rollDie(), d2 = rollDie(), d3 = rollDie();
     const sum = d1 + d2 + d3;
-    const out = sum >= 11 ? "tai" : "xiu";
-    const win = out === pickSide;
-    const reward = win ? pick(winRewards) : pick(loseRewards);
+    const out = txOutcome(sum);
+    const triple = isTriple(d1, d2, d3);
 
-    io.to(roomId).emit("tx:result", { d1, d2, d3, sum, out, pick: pickSide, win, reward, by: pid });
+    // casino-like: triple thua cho cược Tài/Xỉu
+    const win = (!triple) && (out === pickSide);
+    const payoutTotal = win ? bet * 2 : 0;
+    const newBal = settle(room, pid, bet, payoutTotal);
+    const profit = payoutTotal - bet;
+
+    io.to(roomId).emit("tx:result", {
+      by: pid,
+      bet,
+      pick: pickSide,
+      d1, d2, d3, sum,
+      out,
+      triple,
+      win,
+      payoutTotal,
+      profit,
+      balances: room.balances
+    });
   });
 
+  // ===== Roulette spin =====
   socket.on("rl:spin", () => {
-    const b = room.state.rlBet?.[pid] || { betType: "red", betNumber: 7 };
-    const betType = ["red","black","odd","even","low","high","number"].includes(b.betType) ? b.betType : "red";
-    const betNumber = clamp(b.betNumber, 0, 36);
+    if (!(pid === 1 || pid === 2)) return;
 
-    const winRewards = parseLines(room.state.rlWinRewards);
-    const loseRewards = parseLines(room.state.rlLoseRewards);
+    const st = room.player[pid] || defaultPlayerState();
+    const bet = clampInt(st.rlBet ?? 0, MIN_BET, MAX_BET);
+    const betType = ["red","black","odd","even","low","high","number"].includes(st.rlBetType) ? st.rlBetType : "red";
+    const betNumber = clampInt(st.rlNumber ?? 7, 0, 36);
+
+    if (!canBet(room, pid, bet)) {
+      socket.emit("error:msg", { msg: "Không đủ chip hoặc cược ngoài giới hạn." });
+      return;
+    }
 
     const rolled = crypto.randomInt(37);
+    const color = rlColor(rolled);
     const win = rlBetWin(betType, betNumber, rolled);
-    const reward = win ? pick(winRewards) : pick(loseRewards);
+    const payoutTotal = rlPayoutTotal(betType, bet, win);
+    const newBal = settle(room, pid, bet, payoutTotal);
+    const profit = payoutTotal - bet;
 
-    io.to(roomId).emit("rl:result", { betType, betNumber, rolled, color: rlColor(rolled), win, reward, by: pid });
+    io.to(roomId).emit("rl:result", {
+      by: pid,
+      bet,
+      betType,
+      betNumber,
+      rolled,
+      color,
+      win,
+      payoutTotal,
+      profit,
+      balances: room.balances
+    });
   });
 
+  // ===== Blackjack (turn-based P1 rồi P2) =====
   function mustBeTurnPlayer() {
-    return pid !== 0 && pid === room.bj.turn;
+    return (pid === 1 || pid === 2) && pid === room.bj.turn;
   }
 
   socket.on("bj:new", () => {
+    if (pid !== 1) return; // cho gọn: P1 reset ván
     room.bj = newBjState();
-    io.to(roomId).emit("bj:state", bjSnapshot(room.bj));
+    io.to(roomId).emit("bj:state", { bj: bjSnapshot(room.bj), balances: room.balances });
   });
 
   socket.on("bj:deal", () => {
     if (!mustBeTurnPlayer()) return;
+
+    const turnPid = room.bj.turn;
+    const bet = clampInt(room.player[turnPid]?.bjBet ?? 0, MIN_BET, MAX_BET);
+    if (!canBet(room, turnPid, bet)) {
+      socket.emit("error:msg", { msg: "Không đủ chip để chia Blackjack." });
+      return;
+    }
 
     const state = room.bj;
     state.deck = shuffle(buildDeck());
@@ -378,66 +428,96 @@ io.on("connection", socket => {
     state.dealer = [state.deck.pop(), state.deck.pop()];
     state.inRound = true;
     state.dealerHidden = true;
+    state.wagerPid = turnPid;
+    state.wager = bet;
     state.lastOutcome = null;
-    state.lastReward = "—";
+    state.lastProfit = 0;
 
-    const winRewards = parseLines(room.state.bjWinRewards);
-    const pushRewards = parseLines(room.state.bjPushRewards);
-    const loseRewards = parseLines(room.state.bjLoseRewards);
+    // Trừ cược ngay khi chia
+    settle(room, turnPid, bet, 0);
 
     const pBJ = isBlackjack(state.player);
     const dBJ = isBlackjack(state.dealer);
+
     if (pBJ || dBJ) {
-      const outcome = pBJ && dBJ ? "push" : (pBJ ? "win" : "lose");
-      const reward = outcome === "win" ? pick(winRewards) : outcome === "push" ? pick(pushRewards) : pick(loseRewards);
-      endBjRound(state, outcome, reward);
+      state.dealerHidden = false;
+      state.inRound = false;
+
+      let payoutTotal = 0;
+      let outcome = "lose";
+
+      if (pBJ && dBJ) {
+        outcome = "push";
+        payoutTotal = bet; // hoàn cược
+      } else if (pBJ) {
+        outcome = "blackjack";
+        payoutTotal = Math.floor(bet * 2.5); // 3:2 + stake
+      } else {
+        outcome = "lose";
+        payoutTotal = 0;
+      }
+
+      // cộng trả
+      room.balances[turnPid] += payoutTotal;
+
+      endBjRound(room, outcome, bet, payoutTotal);
     }
 
-    io.to(roomId).emit("bj:state", bjSnapshot(state));
+    io.to(roomId).emit("bj:state", { bj: bjSnapshot(room.bj), balances: room.balances });
   });
 
   socket.on("bj:hit", () => {
     if (!mustBeTurnPlayer()) return;
     const state = room.bj;
     if (!state.inRound) return;
+    if (state.wagerPid !== pid) return;
 
     state.player.push(state.deck.pop());
 
-    const loseRewards = parseLines(room.state.bjLoseRewards);
-
-    if (handValue(state.player) > 21) {
+    const pVal = handValue(state.player);
+    if (pVal > 21) {
       state.dealerHidden = false;
       dealerPlay(state);
-      endBjRound(state, "lose", pick(loseRewards));
+
+      const bet = state.wager;
+      const payoutTotal = 0;
+      const outcome = "bust";
+
+      endBjRound(room, outcome, bet, payoutTotal);
+
+      io.to(roomId).emit("bj:state", { bj: bjSnapshot(room.bj), balances: room.balances });
+      return;
     }
 
-    io.to(roomId).emit("bj:state", bjSnapshot(state));
+    io.to(roomId).emit("bj:state", { bj: bjSnapshot(room.bj), balances: room.balances });
   });
 
   socket.on("bj:stand", () => {
     if (!mustBeTurnPlayer()) return;
     const state = room.bj;
     if (!state.inRound) return;
+    if (state.wagerPid !== pid) return;
 
     state.dealerHidden = false;
     dealerPlay(state);
 
-    const p = handValue(state.player);
-    const d = handValue(state.dealer);
-
-    const winRewards = parseLines(room.state.bjWinRewards);
-    const pushRewards = parseLines(room.state.bjPushRewards);
-    const loseRewards = parseLines(room.state.bjLoseRewards);
+    const bet = state.wager;
+    const pVal = handValue(state.player);
+    const dVal = handValue(state.dealer);
 
     let outcome = "push";
-    if (d > 21) outcome = "win";
-    else if (p > d) outcome = "win";
-    else if (p < d) outcome = "lose";
+    let payoutTotal = bet;
 
-    const reward = outcome === "win" ? pick(winRewards) : outcome === "push" ? pick(pushRewards) : pick(loseRewards);
-    endBjRound(state, outcome, reward);
+    if (dVal > 21) { outcome = "win"; payoutTotal = bet * 2; }
+    else if (pVal > dVal) { outcome = "win"; payoutTotal = bet * 2; }
+    else if (pVal < dVal) { outcome = "lose"; payoutTotal = 0; }
+    else { outcome = "push"; payoutTotal = bet; }
 
-    io.to(roomId).emit("bj:state", bjSnapshot(state));
+    room.balances[pid] += payoutTotal;
+
+    endBjRound(room, outcome, bet, payoutTotal);
+
+    io.to(roomId).emit("bj:state", { bj: bjSnapshot(room.bj), balances: room.balances });
   });
 });
 
