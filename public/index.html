@@ -1,106 +1,157 @@
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lì Xì Arcade</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Lì Xì Arcade Casino Sim</title>
   <style>
     :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-    body { margin: 0; background: radial-gradient(1200px 600px at 20% 0%, rgba(43,127,255,.20), transparent 60%), radial-gradient(900px 500px at 80% 20%, rgba(255,80,80,.18), transparent 60%), #070a10; color: #e8eef6; }
-    .wrap { max-width: 1120px; margin: 0 auto; padding: 18px; display: grid; gap: 14px; }
-    .card { background: rgba(14,20,32,.74); border: 1px solid rgba(70,100,160,.38); border-radius: 18px; padding: 16px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,.35); }
-    h1 { margin: 0; font-size: 20px; letter-spacing: .2px; }
-    h2 { margin: 0 0 10px; font-size: 16px; opacity: .98; }
-    .topbar { display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-    .pill { display:inline-flex; gap:8px; align-items:center; padding: 7px 12px; border-radius: 999px; border: 1px solid rgba(70,100,160,.38); background: rgba(10,14,22,.7); font-size: 12px; opacity: .96; }
-    .pill b{ font-weight:900; }
-    .row { display:grid; gap: 10px; }
-    .row.inline { grid-template-columns: 1fr 1fr; gap: 10px; }
-    @media (max-width: 760px) { .row.inline { grid-template-columns: 1fr; } }
-    .grid { display:grid; grid-template-columns: 1.2fr .8fr; gap: 16px; }
-    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    body{
+      margin:0;
+      background:
+        radial-gradient(1000px 500px at 20% 0%, rgba(43,127,255,.18), transparent 60%),
+        radial-gradient(900px 500px at 80% 20%, rgba(255,80,80,.14), transparent 60%),
+        #070a10;
+      color:#e8eef6;
+    }
+    .wrap{ max-width:1160px; margin:0 auto; padding:18px; display:grid; gap:14px; }
+    .card{
+      background: rgba(14,20,32,.74);
+      border: 1px solid rgba(70,100,160,.38);
+      border-radius:18px;
+      padding:16px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    h1{ margin:0; font-size:20px; letter-spacing:.2px; }
+    h2{ margin:0 0 10px; font-size:16px; opacity:.98; }
+    .muted{ opacity:.85; font-size:13px; line-height:1.4; }
 
-    .tabbar { display:flex; gap:8px; flex-wrap:wrap; margin-top: 10px; }
-    .tabbar button{
-      padding: 10px 12px; border-radius: 999px; border: 1px solid rgba(70,100,160,.38);
+    .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 12px; border-radius:999px;
+      border: 1px solid rgba(70,100,160,.38);
+      background: rgba(10,14,22,.7);
+      font-size:12px;
+    }
+    .pill b{ font-weight:950; }
+
+    .toolbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:flex-end; }
+    .miniBtn{
+      padding: 8px 10px; border-radius: 12px; border: 1px solid rgba(70,100,160,.38);
       background: rgba(10,14,22,.55); color:#e8eef6; cursor:pointer; font-weight:900;
-      transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
+    }
+
+    .tabbar{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .tabbar button{
+      padding:10px 12px; border-radius:999px;
+      border: 1px solid rgba(70,100,160,.38);
+      background: rgba(10,14,22,.55);
+      color:#e8eef6; cursor:pointer; font-weight:950;
+      transition: transform .12s ease, box-shadow .12s ease;
     }
     .tabbar button:hover{ transform: translateY(-1px); box-shadow: 0 10px 22px rgba(0,0,0,.25); }
-    .tabbar button.active { background: linear-gradient(135deg, #2b7fff, #7a5cff); border-color: transparent; color: white; }
-    .tab { display:none; }
-    .tab.active { display:block; }
+    .tabbar button.active{ background: linear-gradient(135deg, #2b7fff, #7a5cff); border-color:transparent; }
 
-    label { font-size: 13px; opacity: .98; display:flex; align-items:center; gap:8px; }
-    .lockTag{ font-size:12px; opacity:.9; padding:3px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background: rgba(0,0,0,.22); }
-    textarea, input, select {
-      width: 100%; box-sizing: border-box;
-      padding: 10px 12px; border-radius: 14px;
-      border: 1px solid rgba(70,100,160,.38); background: rgba(10,14,22,.62); color: #e8eef6;
-      outline: none;
-      transition: box-shadow .12s ease, transform .12s ease, border-color .12s ease;
+    .tab{ display:none; }
+    .tab.active{ display:block; }
+
+    .grid{ display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; }
+    @media (max-width: 900px){ .grid{ grid-template-columns:1fr; } }
+
+    label{ font-size:13px; opacity:.95; }
+    input, select, textarea{
+      width:100%; box-sizing:border-box;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(70,100,160,.38);
+      background: rgba(10,14,22,.62);
+      color:#e8eef6;
+      outline:none;
     }
-    textarea:focus, input:focus, select:focus{
+    input:focus, select:focus, textarea:focus{
       border-color: rgba(120,170,255,.7);
       box-shadow: 0 0 0 4px rgba(43,127,255,.18);
     }
-    textarea { min-height: 120px; resize: vertical; }
+    textarea{ min-height: 90px; resize: vertical; }
 
-    button.primary {
-      padding: 12px 14px; border-radius: 14px; border: 0;
+    button.primary{
+      padding:12px 14px; border-radius:14px; border:0;
       background: linear-gradient(135deg, #2b7fff, #7a5cff);
-      color: white; font-weight: 950; cursor: pointer;
+      color:white; font-weight:950; cursor:pointer;
       box-shadow: 0 10px 26px rgba(43,127,255,.22);
       transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
     }
     button.primary:hover{ transform: translateY(-1px); filter: brightness(1.06); box-shadow: 0 14px 30px rgba(43,127,255,.28); }
-    button.secondary {
-      padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(70,100,160,.38);
-      background: rgba(10,14,22,.55); color: #e8eef6; font-weight: 950; cursor: pointer;
-      transition: transform .12s ease, background .12s ease;
+    button.secondary{
+      padding:12px 14px; border-radius:14px;
+      border:1px solid rgba(70,100,160,.38);
+      background: rgba(10,14,22,.55);
+      color:#e8eef6; font-weight:950; cursor:pointer;
     }
-    button.secondary:hover{ transform: translateY(-1px); background: rgba(10,14,22,.68); }
-    button:disabled { opacity: .55; cursor:not-allowed; transform:none !important; }
+    button:disabled{ opacity:.55; cursor:not-allowed; transform:none !important; }
 
-    canvas#wheelCanvas { width: 100%; height: auto; background: rgba(10,14,22,.55); border-radius: 18px; border: 1px solid rgba(70,100,160,.38); }
-
-    .result {
-      font-size: 18px; font-weight: 950; padding: 12px; border-radius: 14px;
-      background: rgba(10,14,22,.62); border: 1px solid rgba(70,100,160,.38);
-      position: relative;
-      overflow: hidden;
+    .result{
+      font-size: 18px; font-weight: 950;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(10,14,22,.62);
+      border: 1px solid rgba(70,100,160,.38);
+      overflow:hidden;
     }
     .result.pop{ animation: pop .25s ease; }
     @keyframes pop{ 0%{ transform: scale(.98);} 60%{ transform: scale(1.03);} 100%{ transform: scale(1);} }
 
-    .history { font-size: 13px; max-height: 160px; overflow:auto; }
-    .history div { padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.06); opacity:.95; }
+    .history{ font-size:13px; max-height: 180px; overflow:auto; }
+    .history div{ padding:7px 0; border-bottom:1px solid rgba(255,255,255,.06); opacity:.95; }
 
-    .roulette-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .roulette-cell {
-      border: 1px solid rgba(70,100,160,.38); border-radius: 12px; padding: 10px;
-      background: rgba(10,14,22,.55); display:flex; align-items:center; justify-content:space-between;
+    canvas#wheelCanvas{ width:100%; height:auto; background: rgba(10,14,22,.55); border-radius:18px; border:1px solid rgba(70,100,160,.38); }
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+    .chipBtn{
+      padding:8px 10px; border-radius:999px;
+      border:1px solid rgba(70,100,160,.38);
+      background: rgba(10,14,22,.55);
+      color:#e8eef6; cursor:pointer; font-weight:950;
+    }
+
+    .roulette-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; }
+    .roulette-cell{
+      border:1px solid rgba(70,100,160,.38);
+      border-radius:12px;
+      padding:10px;
+      background: rgba(10,14,22,.55);
+      display:flex; align-items:center; justify-content:space-between;
       font-weight:950;
       transition: transform .12s ease, box-shadow .12s ease;
     }
-    .roulette-cell.active { outline: 2px solid rgba(43,127,255,.95); box-shadow: 0 0 0 6px rgba(43,127,255,.15); transform: translateY(-1px); }
+    .roulette-cell.active{
+      outline:2px solid rgba(43,127,255,.95);
+      box-shadow: 0 0 0 6px rgba(43,127,255,.15);
+      transform: translateY(-1px);
+    }
     .roulette-cell.red { background: linear-gradient(180deg, rgba(255,80,80,0.18), rgba(10,14,22,.55)); }
     .roulette-cell.black { background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(10,14,22,.55)); }
     .roulette-cell.green { background: linear-gradient(180deg, rgba(70,255,170,0.16), rgba(10,14,22,.55)); }
 
-    .hand { display:flex; flex-wrap:wrap; gap:8px; }
+    .hand{ display:flex; flex-wrap:wrap; gap:8px; }
     .cardchip{
-      border:1px solid rgba(70,100,160,.38); background: rgba(10,14,22,.62); border-radius:14px;
-      padding:10px 12px; font-weight:950; min-width: 68px; text-align:center;
+      border:1px solid rgba(70,100,160,.38);
+      background: rgba(10,14,22,.62);
+      border-radius:14px;
+      padding:10px 12px;
+      font-weight:950;
+      min-width:68px;
+      text-align:center;
       box-shadow: 0 10px 22px rgba(0,0,0,.18);
       animation: deal .18s ease;
     }
-    @keyframes deal { from{ transform: translateY(6px); opacity:.0;} to{ transform: translateY(0); opacity:1;} }
+    @keyframes deal{ from{ transform: translateY(6px); opacity:0;} to{ transform: translateY(0); opacity:1;} }
 
-    #fxCanvas{ position: fixed; inset: 0; pointer-events: none; z-index: 50; }
-    .toastWrap{ position: fixed; right: 14px; bottom: 14px; display:grid; gap:10px; z-index: 60; }
+    #fxCanvas{ position: fixed; inset:0; pointer-events:none; z-index:50; }
+    .toastWrap{ position: fixed; right:14px; bottom:14px; display:grid; gap:10px; z-index:60; }
     .toast{
-      width: min(360px, calc(100vw - 28px));
+      width:min(360px, calc(100vw - 28px));
       background: rgba(10,14,22,.78);
       border: 1px solid rgba(70,100,160,.38);
       border-radius: 16px;
@@ -108,74 +159,94 @@
       box-shadow: 0 18px 40px rgba(0,0,0,.35);
       animation: toastIn .18s ease;
     }
-    @keyframes toastIn{ from{ transform: translateY(8px); opacity:.0;} to{ transform: translateY(0); opacity:1;} }
+    @keyframes toastIn{ from{ transform: translateY(8px); opacity:0;} to{ transform: translateY(0); opacity:1;} }
     .toast b{ font-weight:950; }
-    .miniBtn{
-      padding: 8px 10px; border-radius: 12px; border: 1px solid rgba(70,100,160,.38);
-      background: rgba(10,14,22,.55); color:#e8eef6; cursor:pointer; font-weight:900;
-    }
 
-    .shake{ animation: shake .22s ease; }
-    @keyframes shake{
-      0%{ transform: translateX(0); }
-      25%{ transform: translateX(-4px); }
-      50%{ transform: translateX(4px); }
-      75%{ transform: translateX(-3px); }
-      100%{ transform: translateX(0); }
+    /* Cursor overlay */
+    .cursor{
+      position: fixed;
+      z-index: 70;
+      pointer-events: none;
+      transform: translate(-2px, -2px);
+      display:none;
     }
-
-    .toggle{ display:flex; align-items:center; gap:8px; }
-    .toggle input{ width:auto; transform: translateY(1px); }
+    .cursor .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: rgba(43,127,255,.95);
+      box-shadow: 0 0 0 6px rgba(43,127,255,.15);
+    }
+    .cursor .tag{
+      margin-top:6px;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      border: 1px solid rgba(70,100,160,.38);
+      background: rgba(10,14,22,.78);
+      font-size:12px;
+      font-weight:950;
+      white-space:nowrap;
+    }
+    .cursor.p2 .dot{ background: rgba(255,80,80,.95); box-shadow: 0 0 0 6px rgba(255,80,80,.15); }
   </style>
 </head>
 <body>
   <canvas id="fxCanvas"></canvas>
   <div class="toastWrap" id="toastWrap"></div>
 
+  <div class="cursor p1" id="cursorP1"><div class="dot"></div><div class="tag">P1</div></div>
+  <div class="cursor p2" id="cursorP2"><div class="dot"></div><div class="tag">P2</div></div>
+
   <div class="wrap">
     <div class="card">
       <div class="topbar">
-        <h1>🧧 Lì Xì Arcade</h1>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <h1>🎰 Casino Sim (chip ảo)</h1>
+        <div class="toolbar">
           <span class="pill">Status: <b id="mpStatus">Offline</b></span>
           <span class="pill">Room: <b id="roomCode">demo</b></span>
           <span class="pill">Bạn: <b id="playerCode">—</b></span>
           <span class="pill">Online: <b id="presence">—</b></span>
           <button class="miniBtn" id="copyLinkBtn">Copy link phòng</button>
-          <span class="pill toggle"><input type="checkbox" id="lockMode" checked /> Lock mode</span>
+          <button class="miniBtn" id="resetRoomBtn" title="Chỉ P1 dùng">Reset phòng</button>
         </div>
       </div>
+      <div class="muted" style="margin-top:8px;">
+        Mô phỏng casino dùng <b>chip ảo</b>. Không nạp/rút/đổi tiền thật. Nếu Render “sleep”/redeploy, số dư có thể reset.
+      </div>
 
-      <div class="tabbar" role="tablist" aria-label="Game tabs">
-        <button class="active" data-tab-btn="wheel">Vòng quay</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+        <span class="pill">P1 balance: <b id="balP1">—</b></span>
+        <span class="pill">P2 balance: <b id="balP2">—</b></span>
+        <span class="pill">Min bet: <b id="minBet">—</b></span>
+        <span class="pill">Max bet: <b id="maxBet">—</b></span>
+      </div>
+
+      <div class="tabbar" role="tablist">
+        <button class="active" data-tab-btn="wheel">Wheel</button>
         <button data-tab-btn="taixiu">Tài/Xỉu</button>
         <button data-tab-btn="blackjack">Blackjack</button>
         <button data-tab-btn="roulette">Roulette</button>
       </div>
     </div>
 
-    <section class="card tab active" id="tab-wheel" data-tab="wheel">
-      <h2>Vòng quay</h2>
+    <!-- WHEEL -->
+    <section class="card tab active" data-tab="wheel">
+      <h2>Wheel (bonus wheel) — trả theo hệ số cược (RTP ~97%)</h2>
       <div class="grid">
         <div class="row">
           <canvas id="wheelCanvas" width="720" height="720"></canvas>
+          <div class="muted">x0: mất cược · x1: hoàn cược · x2: thắng 1:1 · x10: jackpot hiếm</div>
         </div>
+
         <div class="row">
-          <label>
-            Mục
-            <span class="lockTag" id="lockTag-wheelItems" style="display:none"></span>
-          </label>
-          <textarea id="wheelItems"></textarea>
+          <label>Cược (chip)</label>
+          <input id="wheelBet" type="number" min="10" step="10" />
+          <div class="chips" id="wheelChips"></div>
 
-          <label>
-            Tốc độ
-            <span class="lockTag" id="lockTag-wheelSpeed" style="display:none"></span>
-          </label>
-          <input id="wheelSpeed" type="range" min="1" max="10" value="6" />
-
-          <div class="row inline">
-            <button class="primary" id="wheelSpinBtn">Quay</button>
-            <button class="secondary" id="wheelResetBtn">Reset</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button class="primary" id="wheelSpinBtn">SPIN</button>
+            <button class="secondary" id="wheelClearBtn">Clear history</button>
           </div>
 
           <div class="result" id="wheelResult">—</div>
@@ -184,27 +255,31 @@
       </div>
     </section>
 
-    <section class="card tab" id="tab-taixiu" data-tab="taixiu">
-      <h2>Tài/Xỉu</h2>
+    <!-- TAI XIU -->
+    <section class="card tab" data-tab="taixiu">
+      <h2>Tài/Xỉu (Sic Bo) — 3 xúc xắc</h2>
       <div class="grid">
         <div class="row">
-          <div class="row inline">
+          <div class="muted">Cược Tài (11–17) / Xỉu (4–10). <b>Bộ ba (triple) thua</b> cho cược Tài/Xỉu. Trả 1:1.</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div>
-              <label>Tôi chọn</label>
+              <label>Chọn</label>
               <select id="txPick">
                 <option value="tai">Tài</option>
                 <option value="xiu">Xỉu</option>
               </select>
             </div>
             <div>
-              <label>Tốc độ hiệu ứng</label>
-              <input id="txSpeed" type="range" min="1" max="10" value="6" />
+              <label>Cược (chip)</label>
+              <input id="txBet" type="number" min="10" step="10" />
             </div>
           </div>
+          <div class="chips" id="txChips"></div>
 
-          <div class="row inline">
-            <button class="primary" id="txRollBtn">Lắc</button>
-            <button class="secondary" id="txResetBtn">Reset</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button class="primary" id="txRollBtn">ROLL</button>
+            <button class="secondary" id="txClearBtn">Clear history</button>
           </div>
 
           <div class="result" id="txResult">—</div>
@@ -213,41 +288,42 @@
 
         <div class="row">
           <div class="card" style="padding:14px;">
-            <label>
-              THẮNG
-              <span class="lockTag" id="lockTag-txWinRewards" style="display:none"></span>
-            </label>
-            <textarea id="txWinRewards"></textarea>
-
-            <label>
-              THUA
-              <span class="lockTag" id="lockTag-txLoseRewards" style="display:none"></span>
-            </label>
-            <textarea id="txLoseRewards"></textarea>
+            <h2>Gợi ý “casino-style” quản lý vốn</h2>
+            <div class="muted">
+              - Đừng cược quá 1–3% số dư/1 ván.<br/>
+              - Nếu chuỗi thua dài, giảm cược về min bet.
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="card tab" id="tab-blackjack" data-tab="blackjack">
-      <h2>Blackjack</h2>
+    <!-- BLACKJACK -->
+    <section class="card tab" data-tab="blackjack">
+      <h2>Blackjack — trả 1:1, Blackjack trả 3:2</h2>
       <div class="grid">
         <div class="row">
-          <div class="row inline">
-            <button class="primary" id="bjDealBtn">Chia</button>
-            <button class="secondary" id="bjNewBtn">Ván mới</button>
+          <div class="muted">Turn-based: P1 chơi xong → P2. Dealer rút đến ≥17.</div>
+
+          <label>Cược (chip) cho lượt của bạn</label>
+          <input id="bjBet" type="number" min="10" step="10" />
+          <div class="chips" id="bjChips"></div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button class="primary" id="bjDealBtn">DEAL</button>
+            <button class="secondary" id="bjNewBtn" title="Chỉ P1">New round</button>
           </div>
 
-          <div class="row inline">
-            <button class="primary" id="bjHitBtn" disabled>Rút</button>
-            <button class="secondary" id="bjStandBtn" disabled>Dừng</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button class="primary" id="bjHitBtn" disabled>HIT</button>
+            <button class="secondary" id="bjStandBtn" disabled>STAND</button>
           </div>
 
           <div class="card" style="padding:14px;">
             <div style="opacity:.86;font-size:13px;">Dealer</div>
             <div class="hand" id="bjDealerHand"></div>
             <div style="height:12px"></div>
-            <div style="opacity:.86;font-size:13px;">Bạn</div>
+            <div style="opacity:.86;font-size:13px;">Player</div>
             <div class="hand" id="bjPlayerHand"></div>
             <div style="height:12px"></div>
             <div class="result" id="bjResult">—</div>
@@ -258,35 +334,26 @@
 
         <div class="row">
           <div class="card" style="padding:14px;">
-            <label>
-              THẮNG
-              <span class="lockTag" id="lockTag-bjWinRewards" style="display:none"></span>
-            </label>
-            <textarea id="bjWinRewards"></textarea>
-
-            <label>
-              HÒA
-              <span class="lockTag" id="lockTag-bjPushRewards" style="display:none"></span>
-            </label>
-            <textarea id="bjPushRewards"></textarea>
-
-            <label>
-              THUA
-              <span class="lockTag" id="lockTag-bjLoseRewards" style="display:none"></span>
-            </label>
-            <textarea id="bjLoseRewards"></textarea>
+            <h2>Paytable</h2>
+            <div class="muted">
+              - Thắng: +1× cược (return = 2×)<br/>
+              - Hòa: hoàn cược (return = 1×)<br/>
+              - Thua/bust: mất cược (return = 0)<br/>
+              - Blackjack: +1.5× cược (return = 2.5×)
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="card tab" id="tab-roulette" data-tab="roulette">
-      <h2>Roulette</h2>
+    <!-- ROULETTE -->
+    <section class="card tab" data-tab="roulette">
+      <h2>Roulette (EU 0–36) — đỏ/đen 1:1, số 35:1</h2>
       <div class="grid">
         <div class="row">
-          <div class="row inline">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div>
-              <label>Tôi cược</label>
+              <label>Loại cược</label>
               <select id="rlBetType">
                 <option value="red">Đỏ</option>
                 <option value="black">Đen</option>
@@ -294,38 +361,38 @@
                 <option value="even">Chẵn</option>
                 <option value="low">1–18</option>
                 <option value="high">19–36</option>
-                <option value="number">Số</option>
+                <option value="number">Số cụ thể</option>
               </select>
             </div>
             <div id="rlNumberWrap" style="display:none;">
               <label>Số (0–36)</label>
-              <input id="rlNumber" type="number" min="0" max="36" value="7" />
+              <input id="rlNumber" type="number" min="0" max="36" value="7"/>
             </div>
           </div>
 
-          <div class="row inline">
-            <button class="primary" id="rlSpinBtn">Quay</button>
-            <button class="secondary" id="rlResetBtn">Reset</button>
+          <label>Cược (chip)</label>
+          <input id="rlBet" type="number" min="10" step="10" />
+          <div class="chips" id="rlChips"></div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button class="primary" id="rlSpinBtn">SPIN</button>
+            <button class="secondary" id="rlClearBtn">Clear history</button>
           </div>
 
           <div class="result" id="rlResult">—</div>
+          <div class="muted">Bàn số (highlight số vừa ra)</div>
           <div class="roulette-grid" id="rlGrid"></div>
           <div class="history" id="rlHistory"></div>
         </div>
 
         <div class="row">
           <div class="card" style="padding:14px;">
-            <label>
-              TRÚNG
-              <span class="lockTag" id="lockTag-rlWinRewards" style="display:none"></span>
-            </label>
-            <textarea id="rlWinRewards"></textarea>
-
-            <label>
-              TRẬT
-              <span class="lockTag" id="lockTag-rlLoseRewards" style="display:none"></span>
-            </label>
-            <textarea id="rlLoseRewards"></textarea>
+            <h2>Paytable</h2>
+            <div class="muted">
+              - Đỏ/Đen/Chẵn/Lẻ/1–18/19–36: trả 1:1 (return 2×)<br/>
+              - Số cụ thể: trả 35:1 (return 36×)<br/>
+              - Ra 0: thua hết các cược even-money
+            </div>
           </div>
         </div>
       </div>
@@ -335,82 +402,78 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     (() => {
+      // ===== FX =====
       const fxCanvas = document.getElementById("fxCanvas");
       const fx = fxCanvas.getContext("2d");
-      let fxW = 0, fxH = 0;
-      function fxResize() {
+      let fxW=0, fxH=0;
+      function fxResize(){
         const dpr = window.devicePixelRatio || 1;
-        fxW = Math.floor(innerWidth * dpr);
-        fxH = Math.floor(innerHeight * dpr);
-        fxCanvas.width = fxW;
-        fxCanvas.height = fxH;
-        fxCanvas.style.width = innerWidth + "px";
-        fxCanvas.style.height = innerHeight + "px";
-        fx.setTransform(1,0,0,1,0,0);
+        fxW = Math.floor(innerWidth*dpr);
+        fxH = Math.floor(innerHeight*dpr);
+        fxCanvas.width = fxW; fxCanvas.height = fxH;
+        fxCanvas.style.width = innerWidth+"px";
+        fxCanvas.style.height = innerHeight+"px";
       }
-      addEventListener("resize", fxResize);
-      fxResize();
+      addEventListener("resize", fxResize); fxResize();
 
       const toastWrap = document.getElementById("toastWrap");
-      function toast(title, msg) {
+      function toast(title, msg){
         const el = document.createElement("div");
         el.className = "toast";
         el.innerHTML = `<b>${title}</b><div style="opacity:.92;margin-top:4px">${msg}</div>`;
         toastWrap.appendChild(el);
-        setTimeout(() => { el.style.opacity = "0"; el.style.transform = "translateY(6px)"; }, 2600);
+        setTimeout(() => { el.style.opacity="0"; el.style.transform="translateY(6px)"; }, 2600);
         setTimeout(() => el.remove(), 3100);
       }
 
       let audioCtx = null;
-      function beep(type) {
-        try {
-          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      function beep(kind){
+        try{
+          if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
           const t0 = audioCtx.currentTime;
           const o = audioCtx.createOscillator();
           const g = audioCtx.createGain();
           o.type = "sine";
-          o.frequency.value = type === "win" ? 880 : type === "spin" ? 520 : 180;
+          o.frequency.value = kind==="win" ? 880 : kind==="spin" ? 520 : 220;
           g.gain.setValueAtTime(0.0001, t0);
-          g.gain.exponentialRampToValueAtTime(type === "win" ? 0.10 : 0.06, t0 + 0.01);
-          g.gain.exponentialRampToValueAtTime(0.0001, t0 + (type === "win" ? 0.24 : 0.16));
+          g.gain.exponentialRampToValueAtTime(kind==="win" ? 0.12 : 0.07, t0+0.01);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + (kind==="win"?0.25:0.16));
           o.connect(g); g.connect(audioCtx.destination);
-          o.start(t0);
-          o.stop(t0 + (type === "win" ? 0.26 : 0.18));
-        } catch {}
+          o.start(t0); o.stop(t0 + (kind==="win"?0.27:0.18));
+        }catch{}
       }
 
       const confetti = [];
-      function confettiBurst(intensity=1) {
-        const n = Math.floor(80 * intensity);
-        for (let i = 0; i < n; i++) {
+      function confettiBurst(intensity=1){
+        const n = Math.floor(80*intensity);
+        for(let i=0;i<n;i++){
           confetti.push({
-            x: fxW * (0.2 + Math.random() * 0.6),
+            x: fxW*(0.2+Math.random()*0.6),
             y: -20,
-            vx: (Math.random() - 0.5) * 6,
-            vy: 6 + Math.random() * 8,
-            r: 2 + Math.random() * 4,
+            vx: (Math.random()-0.5)*6,
+            vy: 6+Math.random()*9,
+            r: 2+Math.random()*4,
             a: 1,
-            rot: Math.random() * Math.PI,
-            vr: (Math.random() - 0.5) * 0.25
+            rot: Math.random()*Math.PI,
+            vr: (Math.random()-0.5)*0.25
           });
         }
       }
-      function fxTick() {
+      function fxTick(){
         fx.clearRect(0,0,fxW,fxH);
-        for (let i = confetti.length - 1; i >= 0; i--) {
+        for(let i=confetti.length-1;i>=0;i--){
           const p = confetti[i];
           p.vy += 0.15;
-          p.x += p.vx;
-          p.y += p.vy;
+          p.x += p.vx; p.y += p.vy;
           p.rot += p.vr;
           p.a *= 0.992;
-          if (p.y > fxH + 60 || p.a < 0.03) confetti.splice(i, 1);
-          else {
+          if(p.y > fxH+60 || p.a < 0.03) confetti.splice(i,1);
+          else{
             fx.save();
             fx.globalAlpha = p.a;
-            fx.translate(p.x, p.y);
+            fx.translate(p.x,p.y);
             fx.rotate(p.rot);
-            fx.fillStyle = `hsl(${Math.floor((p.x+p.y) % 360)}, 90%, 60%)`;
+            fx.fillStyle = `hsl(${Math.floor((p.x+p.y)%360)}, 90%, 60%)`;
             fx.fillRect(-p.r, -p.r, p.r*2.2, p.r*1.2);
             fx.restore();
           }
@@ -419,20 +482,27 @@
       }
       fxTick();
 
-      function nowTime() { return new Date().toLocaleTimeString(); }
-      function addHistory(container, text) {
+      function nowTime(){ return new Date().toLocaleTimeString(); }
+      function addHistory(el, text){
         const div = document.createElement("div");
         div.textContent = `${nowTime()} — ${text}`;
-        container.prepend(div);
+        el.prepend(div);
       }
-      function who(by) { return by ? `P${by}` : "Khách"; }
+      function fmt(n){ return (Number(n)||0).toLocaleString("vi-VN"); }
+      function sign(n){ return (n>0?"+":"") + fmt(n); }
+      function who(p){ return p ? `P${p}` : "Khách"; }
 
+      // ===== Multiplayer / state =====
       const mpStatusEl = document.getElementById("mpStatus");
       const roomCodeEl = document.getElementById("roomCode");
       const playerCodeEl = document.getElementById("playerCode");
       const presenceEl = document.getElementById("presence");
+      const balP1El = document.getElementById("balP1");
+      const balP2El = document.getElementById("balP2");
+      const minBetEl = document.getElementById("minBet");
+      const maxBetEl = document.getElementById("maxBet");
       const copyLinkBtn = document.getElementById("copyLinkBtn");
-      const lockModeEl = document.getElementById("lockMode");
+      const resetRoomBtn = document.getElementById("resetRoomBtn");
 
       const qs = new URLSearchParams(location.search);
       const room = qs.get("room") || "demo";
@@ -440,700 +510,626 @@
 
       copyLinkBtn.addEventListener("click", async () => {
         const link = `${location.origin}/?room=${encodeURIComponent(room)}`;
-        try {
-          await navigator.clipboard.writeText(link);
-          toast("Copied", link);
-          beep("spin");
-        } catch {
-          toast("Copy failed", link);
-        }
+        try{ await navigator.clipboard.writeText(link); toast("Copied", link); beep("tap"); }
+        catch{ toast("Copy failed", link); }
       });
 
       let socket = null;
-      let myPlayerId = 0;
-      let locks = {};
+      let myPid = 0;
+      let limits = { MIN_BET: 10, MAX_BET: 500000, START_BALANCE: 10000 };
+      let balances = {1:0,2:0};
+      let playerState = {1:{},2:{}};
 
-      function lockTag(field, pid) {
-        const el = document.getElementById("lockTag-" + field);
-        if (!el) return;
-        if (!pid) { el.style.display = "none"; el.textContent = ""; return; }
-        el.style.display = "inline-flex";
-        el.textContent = `đang chỉnh bởi P${pid}`;
+      function renderBalances(){
+        balP1El.textContent = fmt(balances[1] ?? 0);
+        balP2El.textContent = fmt(balances[2] ?? 0);
+        minBetEl.textContent = fmt(limits.MIN_BET);
+        maxBetEl.textContent = fmt(limits.MAX_BET);
       }
 
-      function applyLockState() {
-        const lockMode = !!lockModeEl.checked;
-        const map = locks || {};
-        const lockFields = Object.keys(map);
-
-        const isLockedByOther = (field) => lockMode && map[field] && map[field] !== myPlayerId;
-
-        const setRO = (el, ro) => {
-          if (!el) return;
-          if (el.tagName === "TEXTAREA" || el.tagName === "INPUT") el.readOnly = ro;
-          if (el.tagName === "SELECT") el.disabled = ro;
-        };
-
-        const items = [
-          ["wheelItems", document.getElementById("wheelItems")],
-          ["wheelSpeed", document.getElementById("wheelSpeed")],
-          ["txWinRewards", document.getElementById("txWinRewards")],
-          ["txLoseRewards", document.getElementById("txLoseRewards")],
-          ["bjWinRewards", document.getElementById("bjWinRewards")],
-          ["bjPushRewards", document.getElementById("bjPushRewards")],
-          ["bjLoseRewards", document.getElementById("bjLoseRewards")],
-          ["rlWinRewards", document.getElementById("rlWinRewards")],
-          ["rlLoseRewards", document.getElementById("rlLoseRewards")]
-        ];
-
-        for (const [f, el] of items) setRO(el, isLockedByOther(f));
-        for (const f of ["wheelItems","wheelSpeed","txWinRewards","txLoseRewards","bjWinRewards","bjPushRewards","bjLoseRewards","rlWinRewards","rlLoseRewards"]) {
-          lockTag(f, map[f] || 0);
-        }
+      // ===== Cursor =====
+      const cursorP1 = document.getElementById("cursorP1");
+      const cursorP2 = document.getElementById("cursorP2");
+      let currentTab = "wheel";
+      function showCursor(by, x, y, tab){
+        const el = by === 1 ? cursorP1 : cursorP2;
+        if(!el) return;
+        if(by === myPid) return;
+        el.style.display = "block";
+        el.style.left = (x*innerWidth) + "px";
+        el.style.top  = (y*innerHeight) + "px";
+        el.querySelector(".tag").textContent = `P${by} · ${tab || ""}`;
       }
 
-      function setLock(field, locked) {
-        if (!socket || !socket.connected) return;
-        socket.emit("lock:set", { field, locked });
+      let lastSend = 0;
+      function sendCursor(e){
+        if(!socket || !socket.connected) return;
+        if(!(myPid===1 || myPid===2)) return;
+        const now = performance.now();
+        if(now - lastSend < 40) return;
+        lastSend = now;
+        const x = (e.clientX ?? 0) / innerWidth;
+        const y = (e.clientY ?? 0) / innerHeight;
+        socket.emit("cursor", { x, y, tab: currentTab });
       }
+      addEventListener("mousemove", sendCursor, { passive: true });
 
-      function bindLock(el, field) {
-        el.addEventListener("focus", () => { if (lockModeEl.checked) setLock(field, true); });
-        el.addEventListener("blur",  () => { if (lockModeEl.checked) setLock(field, false); });
-      }
-
-      function sendState(field, value) {
-        if (!socket || !socket.connected) return;
-        socket.emit("state:set", { field, value });
-      }
-
-      function debounce(fn, ms) {
-        let t = null;
-        return (...args) => {
-          clearTimeout(t);
-          t = setTimeout(() => fn(...args), ms);
-        };
-      }
-
-      let applying = new Set();
-      function applyControlValue(el, value, key) {
-        if (!el) return;
-        applying.add(key);
-        if (el.type === "range" || el.type === "number") el.value = String(value);
-        else el.value = String(value ?? "");
-        applying.delete(key);
-      }
-
+      // ===== Tabs =====
       const tabBtns = [...document.querySelectorAll("[data-tab-btn]")];
       const tabs = [...document.querySelectorAll(".tab")];
 
-      function setTab(name, silent=false) {
-        tabBtns.forEach(b => b.classList.toggle("active", b.getAttribute("data-tab-btn") === name));
-        tabs.forEach(t => t.classList.toggle("active", t.getAttribute("data-tab") === name));
-        if (!silent && socket && socket.connected) socket.emit("ui:tab", { tab: name });
+      function setTab(name, silent=false){
+        currentTab = name;
+        tabBtns.forEach(b => b.classList.toggle("active", b.getAttribute("data-tab-btn")===name));
+        tabs.forEach(t => t.classList.toggle("active", t.getAttribute("data-tab")===name));
+        if(!silent && socket && socket.connected){
+          socket.emit("player:set", { key:"tab", value:name });
+        }
       }
-
       tabBtns.forEach(btn => {
         btn.addEventListener("click", () => {
-          beep("spin");
+          beep("tap");
           const name = btn.getAttribute("data-tab-btn");
           setTab(name, false);
         });
       });
 
-      const wheelCanvas = document.getElementById("wheelCanvas");
-      const wctx = wheelCanvas.getContext("2d");
-      const wheelItemsEl = document.getElementById("wheelItems");
-      const wheelSpinBtn = document.getElementById("wheelSpinBtn");
-      const wheelResetBtn = document.getElementById("wheelResetBtn");
-      const wheelResultEl = document.getElementById("wheelResult");
-      const wheelHistoryEl = document.getElementById("wheelHistory");
-      const wheelSpeedEl = document.getElementById("wheelSpeed");
-
-      let wheelItems = [];
-      let wheelAngle = 0;
-      let wheelSpinning = false;
-
-      function parseLines(text) {
-        return String(text || "").split("\n").map(s => s.trim()).filter(Boolean);
-      }
-
-      function wheelParseItems() {
-        wheelItems = parseLines(wheelItemsEl.value);
-        if (wheelItems.length < 2) wheelItems = ["10,000₫", "20,000₫"];
-      }
-
-      function wheelDraw() {
-        const W = wheelCanvas.width, H = wheelCanvas.height;
-        const cx = W / 2, cy = H / 2;
-        const r = Math.min(W, H) * 0.45;
-
-        wctx.clearRect(0, 0, W, H);
-
-        const glow = wctx.createRadialGradient(cx, cy, r*0.2, cx, cy, r*1.1);
-        glow.addColorStop(0, "rgba(122,92,255,0.18)");
-        glow.addColorStop(1, "rgba(0,0,0,0)");
-        wctx.fillStyle = glow;
-        wctx.beginPath();
-        wctx.arc(cx, cy, r*1.02, 0, Math.PI*2);
-        wctx.fill();
-
-        const n = wheelItems.length;
-        const slice = (Math.PI * 2) / n;
-
-        for (let i = 0; i < n; i++) {
-          const a0 = wheelAngle + i * slice;
-          const a1 = a0 + slice;
-
-          wctx.beginPath();
-          wctx.moveTo(cx, cy);
-          wctx.arc(cx, cy, r, a0, a1);
-          wctx.closePath();
-
-          wctx.fillStyle = (i % 2 === 0) ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.18)";
-          wctx.fill();
-
-          wctx.strokeStyle = "rgba(255,255,255,0.10)";
-          wctx.lineWidth = 2;
-          wctx.stroke();
-
-          wctx.save();
-          wctx.translate(cx, cy);
-          wctx.rotate(a0 + slice / 2);
-          wctx.textAlign = "right";
-          wctx.fillStyle = "rgba(232,238,246,0.95)";
-          wctx.font = "900 22px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-          const label = wheelItems[i];
-          wctx.fillText(label.length > 18 ? label.slice(0, 18) + "…" : label, r - 16, 8);
-          wctx.restore();
-        }
-
-        wctx.beginPath();
-        wctx.arc(cx, cy, r * 0.14, 0, Math.PI * 2);
-        wctx.fillStyle = "rgba(8,10,16,.92)";
-        wctx.fill();
-        wctx.strokeStyle = "rgba(255,255,255,0.12)";
-        wctx.lineWidth = 2;
-        wctx.stroke();
-
-        wctx.beginPath();
-        wctx.moveTo(cx, cy - r - 22);
-        wctx.lineTo(cx - 18, cy - r + 14);
-        wctx.lineTo(cx + 18, cy - r + 14);
-        wctx.closePath();
-        wctx.fillStyle = "#2b7fff";
-        wctx.fill();
-      }
-
-      function wheelIndexAtPointer() {
-        const n = wheelItems.length;
-        const slice = (Math.PI * 2) / n;
-
-        let a = wheelAngle % (Math.PI * 2);
-        if (a < 0) a += Math.PI * 2;
-
-        const pointer = (Math.PI * 1.5);
-        let rel = pointer - a;
-        rel = rel % (Math.PI * 2);
-        if (rel < 0) rel += Math.PI * 2;
-
-        return Math.floor(rel / slice) % n;
-      }
-
-      function wheelSpinTo(targetIndex) {
-        if (wheelSpinning) return;
-        wheelParseItems();
-
-        wheelSpinning = true;
-        wheelSpinBtn.disabled = true;
-
-        const current = wheelIndexAtPointer();
-        const n = wheelItems.length;
-        const slice = (Math.PI * 2) / n;
-
-        let delta = (targetIndex - current);
-        if (delta < 0) delta += n;
-
-        const sp = Number(wheelSpeedEl.value || 6);
-        const baseTurns = 7 + Math.floor(sp / 2);
-        const totalRotation = (baseTurns * Math.PI * 2) + (delta * slice);
-
-        const startAngle = wheelAngle;
-        const duration = 1900 + sp * 190;
-        const t0 = performance.now();
-        const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
-
-        wheelResultEl.textContent = "…";
-        wheelResultEl.classList.remove("pop");
-
-        beep("spin");
-
-        function frame(t) {
-          const p = Math.min(1, (t - t0) / duration);
-          wheelAngle = startAngle + totalRotation * easeOutCubic(p);
-          wheelDraw();
-
-          if (p < 1) requestAnimationFrame(frame);
-          else {
-            wheelSpinning = false;
-            wheelSpinBtn.disabled = false;
-
-            const idx = wheelIndexAtPointer();
-            const win = wheelItems[idx] || "—";
-            wheelResultEl.textContent = win;
-            wheelResultEl.classList.add("pop");
-
-            const big = /1,000,000|500,000|Nhân đôi|🎉/i.test(win);
-            if (big) { confettiBurst(1.2); beep("win"); }
-          }
-        }
-        requestAnimationFrame(frame);
-      }
-
-      function wheelReset() {
-        wheelSpinning = false;
-        wheelSpinBtn.disabled = false;
-        wheelResultEl.textContent = "—";
-        wheelHistoryEl.innerHTML = "";
-        wheelAngle = 0;
-        wheelParseItems();
-        wheelDraw();
-      }
-
-      wheelResetBtn.addEventListener("click", () => { beep("tap"); wheelReset(); });
-
-      bindLock(wheelItemsEl, "wheelItems");
-      bindLock(wheelSpeedEl, "wheelSpeed");
-
-      wheelItemsEl.addEventListener("input", debounce(() => {
-        if (applying.has("wheelItems")) return;
-        sendState("wheelItems", wheelItemsEl.value);
-        wheelParseItems();
-        wheelDraw();
-      }, 140));
-
-      wheelSpeedEl.addEventListener("input", () => {
-        if (applying.has("wheelSpeed")) return;
-        sendState("wheelSpeed", Number(wheelSpeedEl.value));
-      });
-
-      wheelSpinBtn.addEventListener("click", () => {
-        beep("spin");
-        if (socket && socket.connected) socket.emit("wheel:spin");
-      });
-
-      wheelParseItems();
-      wheelDraw();
-
-      const txPickEl = document.getElementById("txPick");
-      const txSpeedEl = document.getElementById("txSpeed");
-      const txRollBtn = document.getElementById("txRollBtn");
-      const txResetBtn = document.getElementById("txResetBtn");
-      const txResultEl = document.getElementById("txResult");
-      const txHistoryEl = document.getElementById("txHistory");
-      const txWinRewardsEl = document.getElementById("txWinRewards");
-      const txLoseRewardsEl = document.getElementById("txLoseRewards");
-
-      const diceFaces = ["⚀","⚁","⚂","⚃","⚄","⚅"];
-
-      bindLock(txWinRewardsEl, "txWinRewards");
-      bindLock(txLoseRewardsEl, "txLoseRewards");
-
-      txWinRewardsEl.addEventListener("input", debounce(() => {
-        if (applying.has("txWinRewards")) return;
-        sendState("txWinRewards", txWinRewardsEl.value);
-      }, 140));
-
-      txLoseRewardsEl.addEventListener("input", debounce(() => {
-        if (applying.has("txLoseRewards")) return;
-        sendState("txLoseRewards", txLoseRewardsEl.value);
-      }, 140));
-
-      txPickEl.addEventListener("change", () => {
-        beep("tap");
-        if (!myPlayerId) return;
-        sendState(`txPick.${myPlayerId}`, txPickEl.value);
-        toast("Tài/Xỉu", `Bạn chọn ${txPickEl.value === "tai" ? "TÀI" : "XỈU"}`);
-      });
-
-      txRollBtn.addEventListener("click", () => {
-        beep("spin");
-        if (socket && socket.connected) socket.emit("tx:roll");
-      });
-
-      txResetBtn.addEventListener("click", () => {
-        beep("tap");
-        txResultEl.textContent = "—";
-        txHistoryEl.innerHTML = "";
-        txRollBtn.disabled = false;
-      });
-
-      function animateDiceThen(final, speed) {
-        const steps = 7 + Number(speed || 6);
-        let i = 0;
-        txRollBtn.disabled = true;
-        function r() { return 1 + Math.floor(Math.random() * 6); }
-        function tick() {
-          i++;
-          const d1 = r(), d2 = r(), d3 = r();
-          const sum = d1 + d2 + d3;
-          txResultEl.textContent = `${diceFaces[d1-1]} ${diceFaces[d2-1]} ${diceFaces[d3-1]} | ${sum}`;
-          if (i < steps) {
-            setTimeout(tick, 38 + (10 - Number(speed || 6)) * 10);
-          } else {
-            txRollBtn.disabled = false;
-            final();
-          }
-        }
-        tick();
-      }
-
-      const bjDealBtn = document.getElementById("bjDealBtn");
-      const bjNewBtn = document.getElementById("bjNewBtn");
-      const bjHitBtn = document.getElementById("bjHitBtn");
-      const bjStandBtn = document.getElementById("bjStandBtn");
-
-      const bjDealerHandEl = document.getElementById("bjDealerHand");
-      const bjPlayerHandEl = document.getElementById("bjPlayerHand");
-      const bjResultEl = document.getElementById("bjResult");
-      const bjHistoryEl = document.getElementById("bjHistory");
-
-      const bjWinRewardsEl = document.getElementById("bjWinRewards");
-      const bjPushRewardsEl = document.getElementById("bjPushRewards");
-      const bjLoseRewardsEl = document.getElementById("bjLoseRewards");
-
-      bindLock(bjWinRewardsEl, "bjWinRewards");
-      bindLock(bjPushRewardsEl, "bjPushRewards");
-      bindLock(bjLoseRewardsEl, "bjLoseRewards");
-
-      bjWinRewardsEl.addEventListener("input", debounce(() => {
-        if (applying.has("bjWinRewards")) return;
-        sendState("bjWinRewards", bjWinRewardsEl.value);
-      }, 140));
-      bjPushRewardsEl.addEventListener("input", debounce(() => {
-        if (applying.has("bjPushRewards")) return;
-        sendState("bjPushRewards", bjPushRewardsEl.value);
-      }, 140));
-      bjLoseRewardsEl.addEventListener("input", debounce(() => {
-        if (applying.has("bjLoseRewards")) return;
-        sendState("bjLoseRewards", bjLoseRewardsEl.value);
-      }, 140));
-
-      let bjPlayer = [];
-      let bjDealer = [];
-      let bjInRound = false;
-      let bjDealerHidden = true;
-      let bjTurn = 1;
-
-      function bjCardText(c) { return `${c.r}${c.s}`; }
-      function bjHandValue(hand) {
-        let total = 0;
-        let aces = 0;
-        for (const c of hand) {
-          if (c.r === "A") { aces++; total += 11; }
-          else if (c.r === "K" || c.r === "Q" || c.r === "J") total += 10;
-          else total += Number(c.r);
-        }
-        while (total > 21 && aces > 0) { total -= 10; aces--; }
-        return total;
-      }
-
-      function bjRender() {
-        bjDealerHandEl.innerHTML = "";
-        bjPlayerHandEl.innerHTML = "";
-
-        bjDealer.forEach((c, idx) => {
-          const chip = document.createElement("div");
-          chip.className = "cardchip";
-          chip.textContent = (bjDealerHidden && idx === 1 && bjInRound) ? "❓" : bjCardText(c);
-          bjDealerHandEl.appendChild(chip);
+      // ===== Chips helper =====
+      const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
+      function mountChips(container, inputEl, onChange){
+        container.innerHTML = "";
+        CHIP_VALUES.forEach(v => {
+          const b = document.createElement("button");
+          b.className = "chipBtn";
+          b.textContent = `+${fmt(v)}`;
+          b.addEventListener("click", () => {
+            beep("tap");
+            const cur = Math.floor(Number(inputEl.value || 0));
+            inputEl.value = String(Math.max(limits.MIN_BET, cur + v));
+            onChange();
+          });
+          container.appendChild(b);
         });
+        const b2 = document.createElement("button");
+        b2.className="chipBtn";
+        b2.textContent="MIN";
+        b2.addEventListener("click", () => { beep("tap"); inputEl.value=String(limits.MIN_BET); onChange(); });
+        container.appendChild(b2);
 
-        bjPlayer.forEach(c => {
-          const chip = document.createElement("div");
-          chip.className = "cardchip";
-          chip.textContent = bjCardText(c);
-          bjPlayerHandEl.appendChild(chip);
-        });
+        const b3 = document.createElement("button");
+        b3.className="chipBtn";
+        b3.textContent="MAX";
+        b3.addEventListener("click", () => { beep("tap"); inputEl.value=String(limits.MAX_BET); onChange(); });
+        container.appendChild(b3);
       }
 
-      function applyBjState(s, silent) {
-        bjPlayer = s.player || [];
-        bjDealer = s.dealer || [];
-        bjInRound = !!s.inRound;
-        bjDealerHidden = !!s.dealerHidden;
-        bjTurn = s.turn || 1;
-
-        const isMyTurn = myPlayerId && bjTurn === myPlayerId;
-
-        bjDealBtn.disabled = bjInRound || !isMyTurn;
-        bjHitBtn.disabled = !bjInRound || !isMyTurn;
-        bjStandBtn.disabled = !bjInRound || !isMyTurn;
-
-        bjRender();
-
-        const pVal = bjHandValue(bjPlayer);
-        const dVal = bjHandValue(bjDealer);
-
-        if (!bjInRound && s.lastOutcome) {
-          const label = s.lastOutcome === "win" ? "THẮNG" : s.lastOutcome === "push" ? "HÒA" : "THUA";
-          bjResultEl.textContent = `${label} | Bạn ${pVal} | Dealer ${dVal} | ${s.lastReward || "—"} | Lượt: P${bjTurn}`;
-          bjResultEl.classList.add("pop");
-
-          if (!silent) addHistory(bjHistoryEl, `${label}: ${pVal}-${dVal} | ${s.lastReward || "—"}`);
-
-          if (s.lastOutcome === "win") { confettiBurst(1.1); beep("win"); }
-          else if (s.lastOutcome === "lose") { document.body.classList.add("shake"); beep("tap"); setTimeout(()=>document.body.classList.remove("shake"), 240); }
-        } else {
-          bjResultEl.textContent = bjInRound && bjDealerHidden ? `Bạn ${pVal} | Dealer ? | Lượt: P${bjTurn}` : `Bạn ${pVal} | Dealer ${dVal} | Lượt: P${bjTurn}`;
-        }
-      }
-
-      bjDealBtn.addEventListener("click", () => { beep("spin"); if (socket && socket.connected) socket.emit("bj:deal"); });
-      bjHitBtn.addEventListener("click", () => { beep("tap"); if (socket && socket.connected) socket.emit("bj:hit"); });
-      bjStandBtn.addEventListener("click", () => { beep("tap"); if (socket && socket.connected) socket.emit("bj:stand"); });
-      bjNewBtn.addEventListener("click", () => { beep("tap"); if (socket && socket.connected) socket.emit("bj:new"); });
-
-      const rlBetTypeEl = document.getElementById("rlBetType");
-      const rlNumberWrap = document.getElementById("rlNumberWrap");
-      const rlNumberEl = document.getElementById("rlNumber");
-      const rlSpinBtn = document.getElementById("rlSpinBtn");
-      const rlResetBtn = document.getElementById("rlResetBtn");
-      const rlResultEl = document.getElementById("rlResult");
-      const rlGridEl = document.getElementById("rlGrid");
-      const rlHistoryEl = document.getElementById("rlHistory");
-      const rlWinRewardsEl = document.getElementById("rlWinRewards");
-      const rlLoseRewardsEl = document.getElementById("rlLoseRewards");
-
-      bindLock(rlWinRewardsEl, "rlWinRewards");
-      bindLock(rlLoseRewardsEl, "rlLoseRewards");
-
-      rlWinRewardsEl.addEventListener("input", debounce(() => {
-        if (applying.has("rlWinRewards")) return;
-        sendState("rlWinRewards", rlWinRewardsEl.value);
-      }, 140));
-      rlLoseRewardsEl.addEventListener("input", debounce(() => {
-        if (applying.has("rlLoseRewards")) return;
-        sendState("rlLoseRewards", rlLoseRewardsEl.value);
-      }, 140));
-
-      const redNums = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
-      function rlColor(n) { if (n === 0) return "green"; return redNums.has(n) ? "red" : "black"; }
-
-      function rlBuildGrid() {
-        rlGridEl.innerHTML = "";
-        for (let n = 0; n <= 36; n++) {
-          const cell = document.createElement("div");
-          cell.className = `roulette-cell ${rlColor(n)}`;
-          cell.setAttribute("data-num", String(n));
-          cell.innerHTML = `<span>${n}</span><span style="opacity:.8;font-size:12px">${rlColor(n).toUpperCase()}</span>`;
-          rlGridEl.appendChild(cell);
-        }
-      }
-      function rlHighlight(n) {
-        [...rlGridEl.querySelectorAll(".roulette-cell")].forEach(c => c.classList.remove("active"));
-        const hit = rlGridEl.querySelector(`.roulette-cell[data-num="${n}"]`);
-        if (hit) hit.classList.add("active");
-      }
-      rlBuildGrid();
-
-      function updateRlNumberWrap() {
-        rlNumberWrap.style.display = (rlBetTypeEl.value === "number") ? "block" : "none";
-      }
-      rlBetTypeEl.addEventListener("change", () => {
-        beep("tap");
-        updateRlNumberWrap();
-        if (!myPlayerId) return;
-        sendState(`rlBet.${myPlayerId}.betType`, rlBetTypeEl.value);
-      });
-      rlNumberEl.addEventListener("input", debounce(() => {
-        if (!myPlayerId) return;
-        sendState(`rlBet.${myPlayerId}.betNumber`, Number(rlNumberEl.value || 0));
-      }, 120));
-
-      rlSpinBtn.addEventListener("click", () => { beep("spin"); if (socket && socket.connected) socket.emit("rl:spin"); });
-      rlResetBtn.addEventListener("click", () => {
-        beep("tap");
-        rlResultEl.textContent = "—";
-        rlHistoryEl.innerHTML = "";
-        rlHighlight(-1);
-      });
-
-      function animateRouletteThen(final) {
-        rlSpinBtn.disabled = true;
-        let k = 0;
-        const steps = 20;
-        const timer = setInterval(() => {
-          k++;
-          rlHighlight(Math.floor(Math.random() * 37));
-          if (k >= steps) {
-            clearInterval(timer);
-            rlSpinBtn.disabled = false;
-            final();
-          }
-        }, 45);
-      }
-
-      function setResult(el, text) {
+      function popResult(el, text){
         el.textContent = text;
         el.classList.remove("pop");
         void el.offsetWidth;
         el.classList.add("pop");
       }
 
-      lockModeEl.addEventListener("change", () => {
-        applyLockState();
-        toast("Lock mode", lockModeEl.checked ? "Bật (tránh đè nhau)" : "Tắt (ai cũng sửa được)");
+      // ===== Wheel UI =====
+      const wheelCanvas = document.getElementById("wheelCanvas");
+      const wctx = wheelCanvas.getContext("2d");
+      const wheelBetEl = document.getElementById("wheelBet");
+      const wheelChipsEl = document.getElementById("wheelChips");
+      const wheelSpinBtn = document.getElementById("wheelSpinBtn");
+      const wheelClearBtn = document.getElementById("wheelClearBtn");
+      const wheelResultEl = document.getElementById("wheelResult");
+      const wheelHistoryEl = document.getElementById("wheelHistory");
+
+      const WHEEL_SEGMENTS = [
+        { label:"x0",   mult:0.0,  weight:35 },
+        { label:"x0.5", mult:0.5,  weight:20 },
+        { label:"x1",   mult:1.0,  weight:25 },
+        { label:"x2",   mult:2.0,  weight:12 },
+        { label:"x3",   mult:3.0,  weight:6  },
+        { label:"x10",  mult:10.0, weight:2  }
+      ];
+
+      let wheelAngle = 0;
+      let wheelSpinning = false;
+
+      function wheelDraw(){
+        const W = wheelCanvas.width, H = wheelCanvas.height;
+        const cx=W/2, cy=H/2;
+        const r=Math.min(W,H)*0.45;
+
+        wctx.clearRect(0,0,W,H);
+
+        const glow = wctx.createRadialGradient(cx,cy,r*0.2,cx,cy,r*1.1);
+        glow.addColorStop(0,"rgba(122,92,255,0.18)");
+        glow.addColorStop(1,"rgba(0,0,0,0)");
+        wctx.fillStyle=glow;
+        wctx.beginPath(); wctx.arc(cx,cy,r*1.02,0,Math.PI*2); wctx.fill();
+
+        const n=WHEEL_SEGMENTS.length;
+        const slice=(Math.PI*2)/n;
+
+        for(let i=0;i<n;i++){
+          const a0=wheelAngle+i*slice;
+          const a1=a0+slice;
+          wctx.beginPath();
+          wctx.moveTo(cx,cy);
+          wctx.arc(cx,cy,r,a0,a1);
+          wctx.closePath();
+          wctx.fillStyle = (i%2===0) ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.18)";
+          wctx.fill();
+          wctx.strokeStyle="rgba(255,255,255,0.10)";
+          wctx.lineWidth=2; wctx.stroke();
+
+          wctx.save();
+          wctx.translate(cx,cy);
+          wctx.rotate(a0+slice/2);
+          wctx.textAlign="right";
+          wctx.fillStyle="rgba(232,238,246,0.95)";
+          wctx.font="900 26px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+          wctx.fillText(WHEEL_SEGMENTS[i].label, r-18, 10);
+          wctx.restore();
+        }
+
+        // center cap
+        wctx.beginPath(); wctx.arc(cx,cy,r*0.14,0,Math.PI*2);
+        wctx.fillStyle="rgba(8,10,16,.92)"; wctx.fill();
+        wctx.strokeStyle="rgba(255,255,255,0.12)"; wctx.lineWidth=2; wctx.stroke();
+
+        // pointer
+        wctx.beginPath();
+        wctx.moveTo(cx, cy - r - 22);
+        wctx.lineTo(cx - 18, cy - r + 14);
+        wctx.lineTo(cx + 18, cy - r + 14);
+        wctx.closePath();
+        wctx.fillStyle="#2b7fff";
+        wctx.fill();
+      }
+
+      function wheelIndexAtPointer(){
+        const n=WHEEL_SEGMENTS.length;
+        const slice=(Math.PI*2)/n;
+        let a=wheelAngle%(Math.PI*2);
+        if(a<0) a+=Math.PI*2;
+        const pointer = Math.PI*1.5;
+        let rel = pointer - a;
+        rel = rel%(Math.PI*2);
+        if(rel<0) rel+=Math.PI*2;
+        return Math.floor(rel/slice)%n;
+      }
+
+      function wheelSpinTo(targetIndex){
+        if(wheelSpinning) return;
+        wheelSpinning=true;
+        wheelSpinBtn.disabled=true;
+
+        const current=wheelIndexAtPointer();
+        const n=WHEEL_SEGMENTS.length;
+        const slice=(Math.PI*2)/n;
+
+        let delta=(targetIndex-current);
+        if(delta<0) delta+=n;
+
+        const baseTurns=8;
+        const totalRotation=(baseTurns*Math.PI*2)+(delta*slice);
+
+        const startAngle=wheelAngle;
+        const duration=2200;
+        const t0=performance.now();
+        const easeOut=t => 1 - Math.pow(1-t,3);
+
+        beep("spin");
+
+        function frame(t){
+          const p=Math.min(1,(t-t0)/duration);
+          wheelAngle = startAngle + totalRotation*easeOut(p);
+          wheelDraw();
+          if(p<1) requestAnimationFrame(frame);
+          else{
+            wheelSpinning=false;
+            wheelSpinBtn.disabled=false;
+          }
+        }
+        requestAnimationFrame(frame);
+      }
+
+      wheelDraw();
+
+      function setWheelBet(){
+        const v = Math.floor(Number(wheelBetEl.value || limits.MIN_BET));
+        wheelBetEl.value = String(Math.max(limits.MIN_BET, Math.min(limits.MAX_BET, v)));
+        if(socket && socket.connected && (myPid===1 || myPid===2)){
+          socket.emit("player:set", { key:"wheelBet", value:Number(wheelBetEl.value) });
+        }
+      }
+
+      wheelBetEl.addEventListener("input", () => setWheelBet());
+      wheelSpinBtn.addEventListener("click", () => { beep("spin"); socket?.emit("wheel:spin"); });
+      wheelClearBtn.addEventListener("click", () => { wheelHistoryEl.innerHTML=""; popResult(wheelResultEl,"—"); beep("tap"); });
+
+      // ===== Tai/Xiu UI =====
+      const txPickEl = document.getElementById("txPick");
+      const txBetEl = document.getElementById("txBet");
+      const txChipsEl = document.getElementById("txChips");
+      const txRollBtn = document.getElementById("txRollBtn");
+      const txClearBtn = document.getElementById("txClearBtn");
+      const txResultEl = document.getElementById("txResult");
+      const txHistoryEl = document.getElementById("txHistory");
+      const diceFaces = ["⚀","⚁","⚂","⚃","⚄","⚅"];
+
+      function setTxPick(){
+        if(socket && socket.connected && (myPid===1 || myPid===2)){
+          socket.emit("player:set", { key:"txPick", value:txPickEl.value });
+        }
+      }
+      function setTxBet(){
+        const v = Math.floor(Number(txBetEl.value || limits.MIN_BET));
+        txBetEl.value = String(Math.max(limits.MIN_BET, Math.min(limits.MAX_BET, v)));
+        if(socket && socket.connected && (myPid===1 || myPid===2)){
+          socket.emit("player:set", { key:"txBet", value:Number(txBetEl.value) });
+        }
+      }
+
+      txPickEl.addEventListener("change", () => { beep("tap"); setTxPick(); });
+      txBetEl.addEventListener("input", () => setTxBet());
+      txRollBtn.addEventListener("click", () => { beep("spin"); socket?.emit("tx:roll"); });
+      txClearBtn.addEventListener("click", () => { txHistoryEl.innerHTML=""; popResult(txResultEl,"—"); beep("tap"); });
+
+      // ===== Blackjack UI =====
+      const bjBetEl = document.getElementById("bjBet");
+      const bjChipsEl = document.getElementById("bjChips");
+      const bjDealBtn = document.getElementById("bjDealBtn");
+      const bjNewBtn = document.getElementById("bjNewBtn");
+      const bjHitBtn = document.getElementById("bjHitBtn");
+      const bjStandBtn = document.getElementById("bjStandBtn");
+      const bjDealerHandEl = document.getElementById("bjDealerHand");
+      const bjPlayerHandEl = document.getElementById("bjPlayerHand");
+      const bjResultEl = document.getElementById("bjResult");
+      const bjHistoryEl = document.getElementById("bjHistory");
+
+      function cardText(c){ return `${c.r}${c.s}`; }
+      function handValue(hand){
+        let total=0, aces=0;
+        for(const c of hand){
+          if(c.r==="A"){ aces++; total+=11; }
+          else if(["K","Q","J"].includes(c.r)) total+=10;
+          else total+=Number(c.r);
+        }
+        while(total>21 && aces>0){ total-=10; aces--; }
+        return total;
+      }
+
+      function setBjBet(){
+        const v = Math.floor(Number(bjBetEl.value || limits.MIN_BET));
+        bjBetEl.value = String(Math.max(limits.MIN_BET, Math.min(limits.MAX_BET, v)));
+        if(socket && socket.connected && (myPid===1 || myPid===2)){
+          socket.emit("player:set", { key:"bjBet", value:Number(bjBetEl.value) });
+        }
+      }
+      bjBetEl.addEventListener("input", () => setBjBet());
+
+      bjDealBtn.addEventListener("click", () => { beep("spin"); socket?.emit("bj:deal"); });
+      bjHitBtn.addEventListener("click", () => { beep("tap"); socket?.emit("bj:hit"); });
+      bjStandBtn.addEventListener("click", () => { beep("tap"); socket?.emit("bj:stand"); });
+      bjNewBtn.addEventListener("click", () => { beep("tap"); socket?.emit("bj:new"); });
+
+      function renderBj(bj){
+        bjDealerHandEl.innerHTML="";
+        bjPlayerHandEl.innerHTML="";
+
+        (bj.dealer||[]).forEach((c, idx) => {
+          const chip=document.createElement("div");
+          chip.className="cardchip";
+          chip.textContent = (bj.inRound && bj.dealerHidden && idx===1) ? "❓" : cardText(c);
+          bjDealerHandEl.appendChild(chip);
+        });
+
+        (bj.player||[]).forEach(c => {
+          const chip=document.createElement("div");
+          chip.className="cardchip";
+          chip.textContent=cardText(c);
+          bjPlayerHandEl.appendChild(chip);
+        });
+
+        const pVal = handValue(bj.player||[]);
+        const dVal = handValue(bj.dealer||[]);
+        const turn = bj.turn || 1;
+
+        const isMyTurn = (myPid===turn);
+        const canAct = bj.inRound && isMyTurn && (bj.wagerPid===myPid);
+
+        bjDealBtn.disabled = bj.inRound || !isMyTurn || !(myPid===1 || myPid===2);
+        bjHitBtn.disabled = !canAct;
+        bjStandBtn.disabled = !canAct;
+
+        const dealerText = (bj.inRound && bj.dealerHidden) ? "?" : String(dVal);
+        const wagerText = bj.wager ? ` | cược ${fmt(bj.wager)}` : "";
+        popResult(bjResultEl, `Lượt: P${turn}${wagerText} | Bạn ${pVal} | Dealer ${dealerText}`);
+
+        if(!bj.inRound && bj.lastOutcome){
+          const outcome = bj.lastOutcome;
+          const profit = bj.lastProfit || 0;
+          const labelMap = {
+            win: "THẮNG",
+            lose: "THUA",
+            push: "HÒA",
+            blackjack: "BLACKJACK",
+            bust: "BUST"
+          };
+          const label = labelMap[outcome] || outcome;
+          addHistory(bjHistoryEl, `${label} | ${profit>=0?"+":""}${fmt(profit)} chip`);
+          if(outcome==="win" || outcome==="blackjack"){ confettiBurst(1.0); beep("win"); }
+          if(outcome==="lose" || outcome==="bust"){ beep("tap"); }
+        }
+      }
+
+      // ===== Roulette UI =====
+      const rlBetTypeEl = document.getElementById("rlBetType");
+      const rlNumberWrap = document.getElementById("rlNumberWrap");
+      const rlNumberEl = document.getElementById("rlNumber");
+      const rlBetEl = document.getElementById("rlBet");
+      const rlChipsEl = document.getElementById("rlChips");
+      const rlSpinBtn = document.getElementById("rlSpinBtn");
+      const rlClearBtn = document.getElementById("rlClearBtn");
+      const rlResultEl = document.getElementById("rlResult");
+      const rlGridEl = document.getElementById("rlGrid");
+      const rlHistoryEl = document.getElementById("rlHistory");
+      const redNums = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+
+      function rlColor(n){ if(n===0) return "green"; return redNums.has(n)?"red":"black"; }
+
+      function rlBuildGrid(){
+        rlGridEl.innerHTML="";
+        for(let n=0;n<=36;n++){
+          const cell=document.createElement("div");
+          cell.className=`roulette-cell ${rlColor(n)}`;
+          cell.setAttribute("data-num", String(n));
+          cell.innerHTML=`<span>${n}</span><span style="opacity:.8;font-size:12px">${rlColor(n).toUpperCase()}</span>`;
+          rlGridEl.appendChild(cell);
+        }
+      }
+      function rlHighlight(n){
+        [...rlGridEl.querySelectorAll(".roulette-cell")].forEach(c=>c.classList.remove("active"));
+        const hit=rlGridEl.querySelector(`.roulette-cell[data-num="${n}"]`);
+        if(hit) hit.classList.add("active");
+      }
+      rlBuildGrid();
+
+      function updateRlNumberWrap(){
+        rlNumberWrap.style.display = (rlBetTypeEl.value==="number") ? "block" : "none";
+      }
+
+      function setRlBetType(){
+        updateRlNumberWrap();
+        if(socket && socket.connected && (myPid===1 || myPid===2)){
+          socket.emit("player:set", { key:"rlBetType", value: rlBetTypeEl.value });
+        }
+      }
+      function setRlNumber(){
+        const v = Math.floor(Number(rlNumberEl.value||0));
+        rlNumberEl.value = String(Math.max(0, Math.min(36, v)));
+        if(socket && socket.connected && (myPid===1 || myPid===2)){
+          socket.emit("player:set", { key:"rlNumber", value: Number(rlNumberEl.value) });
+        }
+      }
+      function setRlBet(){
+        const v = Math.floor(Number(rlBetEl.value || limits.MIN_BET));
+        rlBetEl.value = String(Math.max(limits.MIN_BET, Math.min(limits.MAX_BET, v)));
+        if(socket && socket.connected && (myPid===1 || myPid===2)){
+          socket.emit("player:set", { key:"rlBet", value: Number(rlBetEl.value) });
+        }
+      }
+
+      rlBetTypeEl.addEventListener("change", () => { beep("tap"); setRlBetType(); });
+      rlNumberEl.addEventListener("input", () => setRlNumber());
+      rlBetEl.addEventListener("input", () => setRlBet());
+      rlSpinBtn.addEventListener("click", () => { beep("spin"); socket?.emit("rl:spin"); });
+      rlClearBtn.addEventListener("click", () => { rlHistoryEl.innerHTML=""; rlHighlight(-1); popResult(rlResultEl,"—"); beep("tap"); });
+
+      // ===== Reset room =====
+      resetRoomBtn.addEventListener("click", () => {
+        beep("tap");
+        if(!socket || !socket.connected) return;
+        if(myPid !== 1){
+          toast("Reset", "Chỉ P1 reset phòng.");
+          return;
+        }
+        if(confirm("Reset phòng? (balance về mặc định)")) socket.emit("room:reset");
       });
 
-      try {
+      // ===== Chips mount =====
+      function mountAllChips(){
+        mountChips(wheelChipsEl, wheelBetEl, setWheelBet);
+        mountChips(txChipsEl, txBetEl, setTxBet);
+        mountChips(bjChipsEl, bjBetEl, setBjBet);
+        mountChips(rlChipsEl, rlBetEl, setRlBet);
+      }
+
+      // ===== Connect socket =====
+      try{
         socket = io({ query: { room }, transports: ["websocket"] });
-        socket.on("connect", () => { mpStatusEl.textContent = "Online"; toast("Kết nối", "Đã vào phòng"); });
-        socket.on("disconnect", () => { mpStatusEl.textContent = "Offline"; toast("Mất kết nối", "Render có thể đang sleep, thử tải lại"); });
 
-        socket.on("init", data => {
-          myPlayerId = data.playerId || 0;
-          playerCodeEl.textContent = myPlayerId ? `P${myPlayerId}` : "Khách";
+        socket.on("connect", () => {
+          mpStatusEl.textContent="Online";
+          toast("Kết nối", "Đã vào phòng");
+        });
 
-          if (data.state) {
-            const s = data.state;
+        socket.on("disconnect", () => {
+          mpStatusEl.textContent="Offline";
+          toast("Mất kết nối", "Render có thể đang sleep, thử tải lại");
+        });
 
-            applyControlValue(wheelItemsEl, s.wheelItems, "wheelItems");
-            applyControlValue(wheelSpeedEl, s.wheelSpeed, "wheelSpeed");
-            wheelParseItems(); wheelDraw();
-
-            applyControlValue(txWinRewardsEl, s.txWinRewards, "txWinRewards");
-            applyControlValue(txLoseRewardsEl, s.txLoseRewards, "txLoseRewards");
-
-            applyControlValue(bjWinRewardsEl, s.bjWinRewards, "bjWinRewards");
-            applyControlValue(bjPushRewardsEl, s.bjPushRewards, "bjPushRewards");
-            applyControlValue(bjLoseRewardsEl, s.bjLoseRewards, "bjLoseRewards");
-
-            applyControlValue(rlWinRewardsEl, s.rlWinRewards, "rlWinRewards");
-            applyControlValue(rlLoseRewardsEl, s.rlLoseRewards, "rlLoseRewards");
-
-            const tab = s.tab || "wheel";
-            setTab(tab, true);
-
-            if (myPlayerId) {
-              const pick = (s.txPick && s.txPick[myPlayerId]) ? s.txPick[myPlayerId] : "tai";
-              txPickEl.value = pick;
-
-              const rb = (s.rlBet && s.rlBet[myPlayerId]) ? s.rlBet[myPlayerId] : { betType: "red", betNumber: 7 };
-              rlBetTypeEl.value = rb.betType || "red";
-              rlNumberEl.value = String(rb.betNumber ?? 7);
-              updateRlNumberWrap();
-            }
-          }
-
-          if (data.bj) applyBjState(data.bj, true);
-
-          locks = data.locks || {};
-          applyLockState();
-
-          if (lockModeEl.checked) {
-            bindLock(wheelItemsEl, "wheelItems");
-            bindLock(wheelSpeedEl, "wheelSpeed");
-            bindLock(txWinRewardsEl, "txWinRewards");
-            bindLock(txLoseRewardsEl, "txLoseRewards");
-            bindLock(bjWinRewardsEl, "bjWinRewards");
-            bindLock(bjPushRewardsEl, "bjPushRewards");
-            bindLock(bjLoseRewardsEl, "bjLoseRewards");
-            bindLock(rlWinRewardsEl, "rlWinRewards");
-            bindLock(rlLoseRewardsEl, "rlLoseRewards");
-          }
+        socket.on("error:msg", (d) => {
+          toast("Lỗi", d?.msg || "Có lỗi");
+          beep("tap");
         });
 
         socket.on("presence", data => {
-          const ps = (data.players || []).map(p => `P${p}`).join(", ");
+          const ps = (data.players||[]).map(p=>`P${p}`).join(", ");
           presenceEl.textContent = ps || "—";
         });
 
-        socket.on("lock:state", data => {
-          locks = data.locks || {};
-          applyLockState();
+        socket.on("cursor", d => {
+          showCursor(d.by, d.x, d.y, d.tab);
         });
 
-        socket.on("state:set", d => {
-          const f = d.field;
-          const v = d.value;
+        socket.on("init", data => {
+          myPid = data.playerId || 0;
+          playerCodeEl.textContent = myPid ? `P${myPid}` : "Khách";
 
-          if (f === "tab") setTab(v, true);
-          if (f === "wheelItems") { applyControlValue(wheelItemsEl, v, "wheelItems"); wheelParseItems(); wheelDraw(); }
-          if (f === "wheelSpeed") { applyControlValue(wheelSpeedEl, v, "wheelSpeed"); }
+          limits = data.limits || limits;
+          balances = data.balances || balances;
+          playerState = data.player || playerState;
 
-          if (f === "txWinRewards") applyControlValue(txWinRewardsEl, v, "txWinRewards");
-          if (f === "txLoseRewards") applyControlValue(txLoseRewardsEl, v, "txLoseRewards");
+          renderBalances();
+          mountAllChips();
 
-          if (f === "bjWinRewards") applyControlValue(bjWinRewardsEl, v, "bjWinRewards");
-          if (f === "bjPushRewards") applyControlValue(bjPushRewardsEl, v, "bjPushRewards");
-          if (f === "bjLoseRewards") applyControlValue(bjLoseRewardsEl, v, "bjLoseRewards");
+          // apply my state into inputs
+          if(myPid===1 || myPid===2){
+            const st = playerState[myPid] || {};
+            wheelBetEl.value = String(st.wheelBet ?? limits.MIN_BET);
+            txPickEl.value = st.txPick ?? "tai";
+            txBetEl.value = String(st.txBet ?? limits.MIN_BET);
+            bjBetEl.value = String(st.bjBet ?? limits.MIN_BET);
+            rlBetTypeEl.value = st.rlBetType ?? "red";
+            rlNumberEl.value = String(st.rlNumber ?? 7);
+            rlBetEl.value = String(st.rlBet ?? limits.MIN_BET);
+            updateRlNumberWrap();
 
-          if (f === "rlWinRewards") applyControlValue(rlWinRewardsEl, v, "rlWinRewards");
-          if (f === "rlLoseRewards") applyControlValue(rlLoseRewardsEl, v, "rlLoseRewards");
+            const tab = st.tab || "wheel";
+            setTab(tab, true);
+          }else{
+            // spectator: vẫn cho xem
+            setTab("wheel", true);
+          }
 
-          if (myPlayerId && f === `txPick.${myPlayerId}`) txPickEl.value = v;
+          // wheel
+          wheelDraw();
 
-          if (myPlayerId && f === `rlBet.${myPlayerId}.betType`) { rlBetTypeEl.value = v; updateRlNumberWrap(); }
-          if (myPlayerId && f === `rlBet.${myPlayerId}.betNumber`) rlNumberEl.value = String(v);
+          // blackjack
+          if(data.bj) renderBj(data.bj);
+
+          toast("Ví chip", `Start balance: ${fmt(limits.START_BALANCE)} (demo)`);
         });
 
-        socket.on("ui:tab", d => {
-          toast("Tab", `${who(d.by)} mở ${d.tab}`);
+        socket.on("state:full", data => {
+          balances = data.balances || balances;
+          playerState = data.player || playerState;
+          renderBalances();
         });
 
-        socket.on("wheel:spinResult", data => {
-          applyControlValue(wheelItemsEl, (data.items || []).join("\n"), "wheelItems");
-          applyControlValue(wheelSpeedEl, data.speed || 6, "wheelSpeed");
-          wheelParseItems(); wheelDraw();
+        socket.on("player:set", d => {
+          // đồng bộ selections của người kia nếu muốn (để "thấy thao tác")
+          if(!d || !d.by) return;
+          const by = d.by;
 
-          const idx = data.targetIndex;
-          const v = (wheelItems[idx] || "—");
-          addHistory(wheelHistoryEl, `${who(data.by)} quay: ${v}`);
-          setResult(wheelResultEl, "…");
-          wheelSpinTo(idx);
+          playerState[by] = playerState[by] || {};
+          playerState[by][d.key] = d.value;
+
+          // Nếu event này của chính mình thì bỏ
+          if(by === myPid) return;
+
+          // Hiển thị toast thao tác
+          if(d.key === "tab") toast("Tab", `${who(by)} mở ${d.value}`);
+          if(d.key === "txPick") toast("Tài/Xỉu", `${who(by)} chọn ${d.value === "tai" ? "TÀI" : "XỈU"}`);
+          if(d.key === "rlBetType") toast("Roulette", `${who(by)} cược kiểu ${d.value}`);
+          if(d.key === "rlNumber") toast("Roulette", `${who(by)} chọn số ${d.value}`);
         });
 
-        socket.on("tx:result", data => {
-          const outLabel = (data.out === "tai") ? "TÀI" : "XỈU";
-          const pickLabel = (data.pick === "tai") ? "TÀI" : "XỈU";
-          const line = `${diceFaces[data.d1-1]} ${diceFaces[data.d2-1]} ${diceFaces[data.d3-1]} | ${data.sum} | ${outLabel} | ${pickLabel} | ${data.win ? "THẮNG" : "THUA"} | ${data.reward}`;
-          animateDiceThen(() => {
-            setResult(txResultEl, line);
-            addHistory(txHistoryEl, `${who(data.by)}: ${data.sum} ${outLabel} ${data.win ? "W" : "L"} ${data.reward}`);
-            if (data.win) { confettiBurst(0.9); beep("win"); }
-            else { beep("tap"); }
-          }, txSpeedEl.value);
+        socket.on("room:reset", snap => {
+          balances = snap.balances || balances;
+          playerState = snap.player || playerState;
+          renderBalances();
+
+          wheelHistoryEl.innerHTML="";
+          txHistoryEl.innerHTML="";
+          bjHistoryEl.innerHTML="";
+          rlHistoryEl.innerHTML="";
+          popResult(wheelResultEl,"—");
+          popResult(txResultEl,"—");
+          popResult(bjResultEl,"—");
+          popResult(rlResultEl,"—");
+          rlHighlight(-1);
+
+          if(myPid===1 || myPid===2){
+            const st = playerState[myPid] || {};
+            wheelBetEl.value = String(st.wheelBet ?? limits.MIN_BET);
+            txPickEl.value = st.txPick ?? "tai";
+            txBetEl.value = String(st.txBet ?? limits.MIN_BET);
+            bjBetEl.value = String(st.bjBet ?? limits.MIN_BET);
+            rlBetTypeEl.value = st.rlBetType ?? "red";
+            rlNumberEl.value = String(st.rlNumber ?? 7);
+            rlBetEl.value = String(st.rlBet ?? limits.MIN_BET);
+            updateRlNumberWrap();
+            setTab(st.tab || "wheel", true);
+          }
+
+          toast("Reset", "Phòng đã reset về mặc định");
+          beep("tap");
         });
 
-        socket.on("rl:result", data => {
-          animateRouletteThen(() => {
-            rlHighlight(data.rolled);
-            const betLabelMap = {
-              red: "ĐỎ",
-              black: "ĐEN",
-              odd: "LẺ",
-              even: "CHẴN",
-              low: "1–18",
-              high: "19–36",
-              number: `SỐ ${data.betNumber}`
-            };
-            const betLabel = betLabelMap[data.betType] || data.betType;
+        // ===== Wheel result =====
+        socket.on("wheel:result", r => {
+          balances = r.balances || balances;
+          renderBalances();
 
-            const text = `Ra ${data.rolled} ${String(data.color).toUpperCase()} | ${betLabel} | ${data.win ? "TRÚNG" : "TRẬT"} | ${data.reward}`;
-            setResult(rlResultEl, text);
-            addHistory(rlHistoryEl, `${who(data.by)}: ${data.rolled} ${data.win ? "W" : "L"} ${data.reward}`);
-            if (data.win) { confettiBurst(1.0); beep("win"); }
-            else { beep("tap"); }
-          });
+          const seg = r.segment;
+          const msg = `${who(r.by)} cược ${fmt(r.bet)} → ${seg.label} | profit ${sign(r.profit)} | bal ${fmt(balances[r.by])}`;
+          addHistory(wheelHistoryEl, msg);
+
+          popResult(wheelResultEl, `${seg.label} | cược ${fmt(r.bet)} | ${r.profit>=0?"+":""}${fmt(r.profit)} | bal ${fmt(balances[r.by])}`);
+
+          wheelSpinTo(r.segmentIndex);
+
+          if(r.profit > 0){ confettiBurst(seg.mult >= 3 ? 1.1 : 0.7); beep("win"); }
+          else beep("tap");
         });
 
-        socket.on("bj:state", s => {
-          applyBjState(s, false);
+        // ===== Tai/Xiu result =====
+        socket.on("tx:result", r => {
+          balances = r.balances || balances;
+          renderBalances();
+
+          const outLabel = (r.out === "tai") ? "TÀI" : "XỈU";
+          const pickLabel = (r.pick === "tai") ? "TÀI" : "XỈU";
+          const tripleText = r.triple ? " (TRIPLE!)" : "";
+          const res = `${diceFaces[r.d1-1]} ${diceFaces[r.d2-1]} ${diceFaces[r.d3-1]} | ${r.sum}${tripleText} → ${outLabel} | Bạn: ${pickLabel} | ${r.win?"WIN":"LOSE"} | profit ${sign(r.profit)} | bal ${fmt(balances[r.by])}`;
+
+          popResult(txResultEl, res);
+          addHistory(txHistoryEl, `${who(r.by)} cược ${fmt(r.bet)} | ${r.win?"WIN":"LOSE"} | ${sign(r.profit)} | bal ${fmt(balances[r.by])}`);
+
+          if(r.win){ confettiBurst(0.9); beep("win"); }
+          else beep("tap");
         });
 
-      } catch {
-        mpStatusEl.textContent = "Offline";
+        // ===== Roulette result =====
+        socket.on("rl:result", r => {
+          balances = r.balances || balances;
+          renderBalances();
+
+          rlHighlight(r.rolled);
+
+          const betLabelMap = {
+            red:"ĐỎ", black:"ĐEN", odd:"LẺ", even:"CHẴN", low:"1–18", high:"19–36",
+            number:`SỐ ${r.betNumber}`
+          };
+          const betLabel = (r.betType === "number") ? `SỐ ${r.betNumber}` : (betLabelMap[r.betType] || r.betType);
+
+          popResult(rlResultEl, `Ra ${r.rolled} (${String(r.color).toUpperCase()}) | ${betLabel} | cược ${fmt(r.bet)} | profit ${sign(r.profit)} | bal ${fmt(balances[r.by])}`);
+          addHistory(rlHistoryEl, `${who(r.by)}: ${r.rolled} ${r.win?"WIN":"LOSE"} | ${sign(r.profit)} | bal ${fmt(balances[r.by])}`);
+
+          if(r.win){ confettiBurst(r.betType==="number" ? 1.2 : 0.8); beep("win"); }
+          else beep("tap");
+        });
+
+        // ===== Blackjack state =====
+        socket.on("bj:state", pack => {
+          balances = pack.balances || balances;
+          renderBalances();
+          renderBj(pack.bj || {});
+        });
+
+      }catch{
+        mpStatusEl.textContent="Offline";
       }
     })();
   </script>
