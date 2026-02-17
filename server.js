@@ -64,12 +64,12 @@ function roomSnapshot(room) {
 // "mult" là hệ số trả về TỔNG (return). Ví dụ mult=2 => trả 2x cược (lãi 1x).
 // RTP ~ 97% với weights dưới đây (house edge nhẹ).
 const WHEEL_SEGMENTS = [
-  { label: "x0",   mult: 0.0,  weight: 35 },
+  { label: "x0",   mult: 0.0,  weight: 0 },
   { label: "x0.5", mult: 0.5,  weight: 20 },
-  { label: "x1",   mult: 1.0,  weight: 25 },
-  { label: "x2",   mult: 2.0,  weight: 12 },
-  { label: "x3",   mult: 3.0,  weight: 6  },
-  { label: "x10",  mult: 10.0, weight: 2  }
+  { label: "x1",   mult: 1.0,  weight: 20 },
+  { label: "x1.5",   mult: 1.5,  weight: 20 },
+  { label: "x2",   mult: 2.0,  weight: 20  },
+  { label: "x2.5",  mult: 2.5, weight: 20  }
 ];
 const WHEEL_TOTAL_WEIGHT = WHEEL_SEGMENTS.reduce((a, s) => a + s.weight, 0);
 function wheelPickIndex() {
