@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lì Xì Arcade</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    body { margin: 0; background: #0b0f14; color: #e8eef6; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 18px; display: grid; gap: 14px; }
+    .card { background: #121925; border: 1px solid #22304a; border-radius: 16px; padding: 16px; }
+    h1 { margin: 0; font-size: 20px; }
+    h2 { margin: 0 0 10px; font-size: 16px; opacity: .98; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding: 6px 10px; border-radius: 999px; border: 1px solid #22304a; background: #0f1520; font-size: 12px; opacity: .95; }
+    .topbar { display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+    .tabbar { display:flex; gap:8px; flex-wrap:wrap; margin-top: 10px; }
+    .tabbar button{
+      padding: 10px 12px; border-radius: 999px; border: 1px solid #22304a;
+      background: #0f1520; color:#e8eef6; cursor:pointer; font-weight:800;
+    }
+    .tabbar button.active { background: #2b7fff; border-color: transparent; color: white; }
+    .tab { display:none; }
+    .tab.active { display:block; }
+    .grid { display:grid; grid-template-columns: 1.2fr .8fr; gap: 16px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    canvas { width: 100%; height: auto; background: #0f1520; border-radius: 16px; border: 1px solid #22304a; }
+    label { font-size: 13px; opacity: .95; }
+    textarea, input, select {
+      width: 100%; box-sizing: border-box;
+      padding: 10px 12px; border-radius: 12px;
+      border: 1px solid #22304a; background: #0f1520; color: #e8eef6;
+      outline: none;
+    }
+    textarea { min-height: 120px; resize: vertical; }
+    .row { display:grid; gap: 10px; }
+    .row.inline { grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 700px) { .row.inline { grid-template-columns: 1fr; } }
+    button.primary {
+      padding: 12px 14px; border-radius: 14px; border: 0;
+      background: #2b7fff; color: white; font-weight: 900; cursor: pointer;
+    }
+    button.secondary {
+      padding: 12px 14px; border-radius: 14px; border: 1px solid #22304a;
+      background: #0f1520; color: #e8eef6; font-weight: 900; cursor: pointer;
+    }
+    button:disabled { opacity: .55; cursor:not-allowed; }
+    .result {
+      font-size: 18px; font-weight: 900; padding: 12px; border-radius: 14px;
+      background: #0f1520; border: 1px solid #22304a;
+    }
+    .history { font-size: 13px; max-height: 160px; overflow:auto; }
+    .history div { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .roulette-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .roulette-cell {
+      border: 1px solid #22304a; border-radius: 10px; padding: 10px;
+      background:#0f1520; display:flex; align-items:center; justify-content:space-between;
+      font-weight:900;
+    }
+    .roulette-cell.red { background: rgba(255,80,80,0.14); }
+    .roulette-cell.black { background: rgba(255,255,255,0.10); }
+    .roulette-cell.green { background: rgba(70,255,170,0.12); }
+    .roulette-cell.active { outline: 2px solid #2b7fff; }
+    .hand { display:flex; flex-wrap:wrap; gap:8px; }
+    .cardchip{
+      border:1px solid #22304a; background:#0f1520; border-radius:12px;
+      padding:10px 12px; font-weight:900; min-width: 68px; text-align:center;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="topbar">
+        <h1>🧧 Lì Xì Arcade</h1>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span class="pill">Status: <span id="mpStatus">Offline</span></span>
+          <span class="pill">Room: <span id="roomCode">demo</span></span>
+          <span class="pill">Bạn: <span id="playerCode">—</span></span>
+        </div>
+      </div>
+      <div class="tabbar" role="tablist" aria-label="Game tabs">
+        <button class="active" data-tab-btn="wheel">Vòng quay</button>
+        <button data-tab-btn="taixiu">Tài/Xỉu</button>
+        <button data-tab-btn="blackjack">Blackjack</button>
+        <button data-tab-btn="roulette">Roulette</button>
+      </div>
+    </div>
+
+    <section class="card tab active" id="tab-wheel" data-tab="wheel">
+      <h2>Vòng quay</h2>
+      <div class="grid">
+        <div class="row">
+          <canvas id="wheelCanvas" width="700" height="700"></canvas>
+        </div>
+        <div class="row">
+          <label>Mục (mỗi dòng 1 mục)</label>
+          <textarea id="wheelItems">10,000₫
+20,000₫
+50,000₫
+100,000₫
+200,000₫
+500,000₫
+1,000,000₫
+Nhân đôi
+Thêm lượt</textarea>
+
+          <label>Tốc độ</label>
+          <input id="wheelSpeed" type="range" min="1" max="10" value="6" />
+
+          <div class="row inline">
+            <button class="primary" id="wheelSpinBtn">Quay</button>
+            <button class="secondary" id="wheelResetBtn">Reset</button>
+          </div>
+
+          <div class="result" id="wheelResult">—</div>
+          <div class="history" id="wheelHistory"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card tab" id="tab-taixiu" data-tab="taixiu">
+      <h2>Tài/Xỉu</h2>
+      <div class="grid">
+        <div class="row">
+          <div class="row inline">
+            <div>
+              <label>Bạn chọn</label>
+              <select id="txPick">
+                <option value="tai">Tài</option>
+                <option value="xiu">Xỉu</option>
+              </select>
+            </div>
+            <div>
+              <label>Tốc độ hiệu ứng</label>
+              <input id="txSpeed" type="range" min="1" max="10" value="6" />
+            </div>
+          </div>
+
+          <div class="row inline">
+            <button class="primary" id="txRollBtn">Lắc</button>
+            <button class="secondary" id="txResetBtn">Reset</button>
+          </div>
+
+          <div class="result" id="txResult">—</div>
+          <div class="history" id="txHistory"></div>
+        </div>
+
+        <div class="row">
+          <div class="card" style="padding:14px;">
+            <label>THẮNG</label>
+            <textarea id="txWinRewards">50,000₫
+100,000₫
+200,000₫
+Trà sữa</textarea>
+
+            <label>THUA</label>
+            <textarea id="txLoseRewards">10,000₫
+20,000₫
+Ôm 1 cái</textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card tab" id="tab-blackjack" data-tab="blackjack">
+      <h2>Blackjack</h2>
+      <div class="grid">
+        <div class="row">
+          <div class="row inline">
+            <button class="primary" id="bjDealBtn">Chia</button>
+            <button class="secondary" id="bjNewBtn">Ván mới</button>
+          </div>
+
+          <div class="row inline">
+            <button class="primary" id="bjHitBtn" disabled>Rút</button>
+            <button class="secondary" id="bjStandBtn" disabled>Dừng</button>
+          </div>
+
+          <div class="card" style="padding:14px;">
+            <div style="opacity:.85;font-size:13px;">Dealer</div>
+            <div class="hand" id="bjDealerHand"></div>
+            <div style="height:10px"></div>
+            <div style="opacity:.85;font-size:13px;">Bạn</div>
+            <div class="hand" id="bjPlayerHand"></div>
+            <div style="height:10px"></div>
+            <div class="result" id="bjResult">—</div>
+          </div>
+
+          <div class="history" id="bjHistory"></div>
+        </div>
+
+        <div class="row">
+          <div class="card" style="padding:14px;">
+            <label>THẮNG</label>
+            <textarea id="bjWinRewards">100,000₫
+200,000₫
+500,000₫</textarea>
+
+            <label>HÒA</label>
+            <textarea id="bjPushRewards">50,000₫
+Trà sữa</textarea>
+
+            <label>THUA</label>
+            <textarea id="bjLoseRewards">10,000₫
+20,000₫</textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card tab" id="tab-roulette" data-tab="roulette">
+      <h2>Roulette</h2>
+      <div class="grid">
+        <div class="row">
+          <div class="row inline">
+            <div>
+              <label>Loại</label>
+              <select id="rlBetType">
+                <option value="red">Đỏ</option>
+                <option value="black">Đen</option>
+                <option value="odd">Lẻ</option>
+                <option value="even">Chẵn</option>
+                <option value="low">1–18</option>
+                <option value="high">19–36</option>
+                <option value="number">Số</option>
+              </select>
+            </div>
+            <div id="rlNumberWrap" style="display:none;">
+              <label>Số (0–36)</label>
+              <input id="rlNumber" type="number" min="0" max="36" value="7" />
+            </div>
+          </div>
+
+          <div class="row inline">
+            <button class="primary" id="rlSpinBtn">Quay</button>
+            <button class="secondary" id="rlResetBtn">Reset</button>
+          </div>
+
+          <div class="result" id="rlResult">—</div>
+          <div class="roulette-grid" id="rlGrid"></div>
+          <div class="history" id="rlHistory"></div>
+        </div>
+
+        <div class="row">
+          <div class="card" style="padding:14px;">
+            <label>TRÚNG</label>
+            <textarea id="rlWinRewards">100,000₫
+200,000₫
+500,000₫</textarea>
+
+            <label>TRẬT</label>
+            <textarea id="rlLoseRewards">10,000₫
+20,000₫</textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    (() => {
+      function randInt(n) {
+        const x = new Uint32Array(1);
+        crypto.getRandomValues(x);
+        return x[0] % n;
+      }
+      function parseLines(text) {
+        return String(text || "").split("\n").map(s => s.trim()).filter(Boolean);
+      }
+      function pickFromTextarea(textareaEl) {
+        const arr = parseLines(textareaEl.value);
+        if (!arr.length) return "—";
+        return arr[randInt(arr.length)];
+      }
+      function nowTime() {
+        return new Date().toLocaleTimeString();
+      }
+      function addHistory(container, text) {
+        const div = document.createElement("div");
+        div.textContent = `${nowTime()} — ${text}`;
+        container.prepend(div);
+      }
+      function who(by) {
+        return by ? `P${by}` : "Khách";
+      }
+
+      const tabBtns = [...document.querySelectorAll("[data-tab-btn]")];
+      const tabs = [...document.querySelectorAll(".tab")];
+      tabBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const name = btn.getAttribute("data-tab-btn");
+          tabBtns.forEach(b => b.classList.toggle("active", b === btn));
+          tabs.forEach(t => t.classList.toggle("active", t.getAttribute("data-tab") === name));
+        });
+      });
+
+      const qs = new URLSearchParams(location.search);
+      const room = qs.get("room") || "demo";
+      const mpStatusEl = document.getElementById("mpStatus");
+      const roomCodeEl = document.getElementById("roomCode");
+      const playerCodeEl = document.getElementById("playerCode");
+
+      roomCodeEl.textContent = room;
+
+      let myPlayerId = 0;
+      let socket = null;
+
+      try {
+        socket = io({ query: { room }, transports: ["websocket"] });
+        socket.on("connect", () => { mpStatusEl.textContent = "Online"; });
+        socket.on("disconnect", () => { mpStatusEl.textContent = "Offline"; });
+        socket.on("init", data => {
+          myPlayerId = data.playerId || 0;
+          playerCodeEl.textContent = myPlayerId ? `P${myPlayerId}` : "Khách";
+          if (data.bj) applyBjState(data.bj, true);
+        });
+      } catch (e) {
+        mpStatusEl.textContent = "Offline";
+      }
+
+      const wheelCanvas = document.getElementById("wheelCanvas");
+      const wctx = wheelCanvas.getContext("2d");
+      const wheelItemsEl = document.getElementById("wheelItems");
+      const wheelSpinBtn = document.getElementById("wheelSpinBtn");
+      const wheelResetBtn = document.getElementById("wheelResetBtn");
+      const wheelResultEl = document.getElementById("wheelResult");
+      const wheelHistoryEl = document.getElementById("wheelHistory");
+      const wheelSpeedEl = document.getElementById("wheelSpeed");
+
+      let wheelItems = [];
+      let wheelAngle = 0;
+      let wheelSpinning = false;
+
+      function wheelParseItems() {
+        wheelItems = parseLines(wheelItemsEl.value);
+        if (wheelItems.length < 2) wheelItems = ["10,000₫", "20,000₫"];
+      }
+
+      function wheelDraw() {
+        const W = wheelCanvas.width, H = wheelCanvas.height;
+        const cx = W / 2, cy = H / 2;
+        const r = Math.min(W, H) * 0.45;
+
+        wctx.clearRect(0, 0, W, H);
+
+        wctx.beginPath();
+        wctx.arc(cx, cy, r + 18, 0, Math.PI * 2);
+        wctx.fillStyle = "rgba(43,127,255,0.08)";
+        wctx.fill();
+
+        const n = wheelItems.length;
+        const slice = (Math.PI * 2) / n;
+
+        for (let i = 0; i < n; i++) {
+          const a0 = wheelAngle + i * slice;
+          const a1 = a0 + slice;
+
+          wctx.beginPath();
+          wctx.moveTo(cx, cy);
+          wctx.arc(cx, cy, r, a0, a1);
+          wctx.closePath();
+
+          wctx.fillStyle = (i % 2 === 0) ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.18)";
+          wctx.fill();
+
+          wctx.strokeStyle = "rgba(255,255,255,0.10)";
+          wctx.lineWidth = 2;
+          wctx.stroke();
+
+          wctx.save();
+          wctx.translate(cx, cy);
+          wctx.rotate(a0 + slice / 2);
+          wctx.textAlign = "right";
+          wctx.fillStyle = "rgba(232,238,246,0.95)";
+          wctx.font = "800 22px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+          const label = wheelItems[i];
+          wctx.fillText(label.length > 18 ? label.slice(0, 18) + "…" : label, r - 16, 8);
+          wctx.restore();
+        }
+
+        wctx.beginPath();
+        wctx.arc(cx, cy, r * 0.14, 0, Math.PI * 2);
+        wctx.fillStyle = "#0b0f14";
+        wctx.fill();
+        wctx.strokeStyle = "rgba(255,255,255,0.12)";
+        wctx.lineWidth = 2;
+        wctx.stroke();
+
+        wctx.beginPath();
+        wctx.moveTo(cx, cy - r - 22);
+        wctx.lineTo(cx - 18, cy - r + 14);
+        wctx.lineTo(cx + 18, cy - r + 14);
+        wctx.closePath();
+        wctx.fillStyle = "#2b7fff";
+        wctx.fill();
+      }
+
+      function wheelIndexAtPointer() {
+        const n = wheelItems.length;
+        const slice = (Math.PI * 2) / n;
+
+        let a = wheelAngle % (Math.PI * 2);
+        if (a < 0) a += Math.PI * 2;
+
+        const pointer = (Math.PI * 1.5);
+        let rel = pointer - a;
+        rel = rel % (Math.PI * 2);
+        if (rel < 0) rel += Math.PI * 2;
+
+        return Math.floor(rel / slice) % n;
+      }
+
+      function wheelSpin(targetIndexOverride) {
+        if (wheelSpinning) return;
+        wheelParseItems();
+
+        wheelSpinning = true;
+        wheelSpinBtn.disabled = true;
+        wheelResultEl.textContent = "…";
+
+        const targetIndex = Number.isInteger(targetIndexOverride) ? targetIndexOverride : randInt(wheelItems.length);
+
+        const current = wheelIndexAtPointer();
+        const n = wheelItems.length;
+        const slice = (Math.PI * 2) / n;
+
+        let delta = (targetIndex - current);
+        if (delta < 0) delta += n;
+
+        const baseTurns = 6 + Math.floor(Number(wheelSpeedEl.value) / 2);
+        const totalRotation = (baseTurns * Math.PI * 2) + (delta * slice);
+
+        const startAngle = wheelAngle;
+        const duration = 2200 + Number(wheelSpeedEl.value) * 180;
+        const t0 = performance.now();
+        const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+
+        function frame(t) {
+          const p = Math.min(1, (t - t0) / duration);
+          wheelAngle = startAngle + totalRotation * easeOutCubic(p);
+          wheelDraw();
+
+          if (p < 1) requestAnimationFrame(frame);
+          else {
+            wheelSpinning = false;
+            wheelSpinBtn.disabled = false;
+
+            const idx = wheelIndexAtPointer();
+            const win = wheelItems[idx];
+            wheelResultEl.textContent = win;
+          }
+        }
+        requestAnimationFrame(frame);
+      }
+
+      function wheelReset() {
+        wheelSpinning = false;
+        wheelSpinBtn.disabled = false;
+        wheelResultEl.textContent = "—";
+        wheelHistoryEl.innerHTML = "";
+        wheelAngle = 0;
+        wheelParseItems();
+        wheelDraw();
+      }
+
+      wheelItemsEl.addEventListener("input", () => { if (!wheelSpinning) { wheelParseItems(); wheelDraw(); }});
+      wheelResetBtn.addEventListener("click", wheelReset);
+
+      wheelSpinBtn.addEventListener("click", () => {
+        wheelParseItems();
+        if (socket && socket.connected) {
+          socket.emit("wheel:spin", { items: wheelItems, speed: Number(wheelSpeedEl.value) });
+        } else {
+          wheelSpin();
+          addHistory(wheelHistoryEl, `Quay: ${wheelResultEl.textContent}`);
+        }
+      });
+
+      if (socket) {
+        socket.on("wheel:spinResult", data => {
+          if (Array.isArray(data.items) && data.items.length >= 2) {
+            wheelItemsEl.value = data.items.join("\n");
+            wheelParseItems();
+          }
+          if (data.speed) wheelSpeedEl.value = String(data.speed);
+          wheelSpin(data.targetIndex);
+          const idx = data.targetIndex;
+          const v = wheelItems[idx] || "—";
+          addHistory(wheelHistoryEl, `${who(data.by)} quay: ${v}`);
+          wheelResultEl.textContent = v;
+        });
+      }
+
+      wheelParseItems();
+      wheelDraw();
+
+      const txPickEl = document.getElementById("txPick");
+      const txSpeedEl = document.getElementById("txSpeed");
+      const txRollBtn = document.getElementById("txRollBtn");
+      const txResetBtn = document.getElementById("txResetBtn");
+      const txResultEl = document.getElementById("txResult");
+      const txHistoryEl = document.getElementById("txHistory");
+      const txWinRewardsEl = document.getElementById("txWinRewards");
+      const txLoseRewardsEl = document.getElementById("txLoseRewards");
+
+      const diceFaces = ["⚀","⚁","⚂","⚃","⚄","⚅"];
+
+      function txRollLocal() {
+        txRollBtn.disabled = true;
+        const steps = 8 + Number(txSpeedEl.value);
+        let i = 0;
+
+        function once() {
+          return randInt(6) + 1;
+        }
+
+        function anim() {
+          i++;
+          const d1 = once(), d2 = once(), d3 = once();
+          const sum = d1 + d2 + d3;
+          txResultEl.textContent = `${diceFaces[d1-1]} ${diceFaces[d2-1]} ${diceFaces[d3-1]} | ${sum}`;
+          if (i < steps) {
+            setTimeout(anim, 40 + (10 - Number(txSpeedEl.value)) * 10);
+          } else {
+            const f1 = once(), f2 = once(), f3 = once();
+            const finalSum = f1 + f2 + f3;
+            const out = finalSum >= 11 ? "tai" : "xiu";
+            const pick = txPickEl.value;
+            const win = out === pick;
+            const reward = win ? pickFromTextarea(txWinRewardsEl) : pickFromTextarea(txLoseRewardsEl);
+            const outLabel = out === "tai" ? "TÀI" : "XỈU";
+            const pickLabel = pick === "tai" ? "TÀI" : "XỈU";
+            txResultEl.textContent = `${diceFaces[f1-1]} ${diceFaces[f2-1]} ${diceFaces[f3-1]} | ${finalSum} | ${outLabel} | ${pickLabel} | ${win ? "THẮNG" : "THUA"} | ${reward}`;
+            addHistory(txHistoryEl, `Local: ${finalSum} ${outLabel} ${win ? "W" : "L"} ${reward}`);
+            txRollBtn.disabled = false;
+          }
+        }
+
+        anim();
+      }
+
+      txRollBtn.addEventListener("click", () => {
+        if (socket && socket.connected) {
+          socket.emit("tx:roll", {
+            pick: txPickEl.value,
+            winRewards: parseLines(txWinRewardsEl.value),
+            loseRewards: parseLines(txLoseRewardsEl.value)
+          });
+        } else {
+          txRollLocal();
+        }
+      });
+
+      txResetBtn.addEventListener("click", () => {
+        txResultEl.textContent = "—";
+        txHistoryEl.innerHTML = "";
+        txRollBtn.disabled = false;
+      });
+
+      if (socket) {
+        socket.on("tx:result", data => {
+          const d1 = data.d1, d2 = data.d2, d3 = data.d3;
+          const sum = data.sum;
+          const out = data.out;
+          const pick = data.pick;
+          const win = data.win;
+          const reward = data.reward;
+
+          const outLabel = out === "tai" ? "TÀI" : "XỈU";
+          const pickLabel = pick === "tai" ? "TÀI" : "XỈU";
+
+          txResultEl.textContent = `${diceFaces[d1-1]} ${diceFaces[d2-1]} ${diceFaces[d3-1]} | ${sum} | ${outLabel} | ${pickLabel} | ${win ? "THẮNG" : "THUA"} | ${reward}`;
+          addHistory(txHistoryEl, `${who(data.by)}: ${sum} ${outLabel} ${win ? "W" : "L"} ${reward}`);
+        });
+      }
+
+      const bjDealBtn = document.getElementById("bjDealBtn");
+      const bjNewBtn = document.getElementById("bjNewBtn");
+      const bjHitBtn = document.getElementById("bjHitBtn");
+      const bjStandBtn = document.getElementById("bjStandBtn");
+
+      const bjDealerHandEl = document.getElementById("bjDealerHand");
+      const bjPlayerHandEl = document.getElementById("bjPlayerHand");
+      const bjResultEl = document.getElementById("bjResult");
+      const bjHistoryEl = document.getElementById("bjHistory");
+
+      const bjWinRewardsEl = document.getElementById("bjWinRewards");
+      const bjPushRewardsEl = document.getElementById("bjPushRewards");
+      const bjLoseRewardsEl = document.getElementById("bjLoseRewards");
+
+      let bjPlayer = [];
+      let bjDealer = [];
+      let bjInRound = false;
+      let bjDealerHidden = true;
+      let bjTurn = 1;
+
+      function bjCardText(c) { return `${c.r}${c.s}`; }
+
+      function bjHandValue(hand) {
+        let total = 0;
+        let aces = 0;
+        for (const c of hand) {
+          if (c.r === "A") { aces++; total += 11; }
+          else if (c.r === "K" || c.r === "Q" || c.r === "J") total += 10;
+          else total += Number(c.r);
+        }
+        while (total > 21 && aces > 0) { total -= 10; aces--; }
+        return total;
+      }
+
+      function bjRender() {
+        bjDealerHandEl.innerHTML = "";
+        bjPlayerHandEl.innerHTML = "";
+
+        bjDealer.forEach((c, idx) => {
+          const chip = document.createElement("div");
+          chip.className = "cardchip";
+          chip.textContent = (bjDealerHidden && idx === 1 && bjInRound) ? "❓" : bjCardText(c);
+          bjDealerHandEl.appendChild(chip);
+        });
+
+        bjPlayer.forEach(c => {
+          const chip = document.createElement("div");
+          chip.className = "cardchip";
+          chip.textContent = bjCardText(c);
+          bjPlayerHandEl.appendChild(chip);
+        });
+      }
+
+      function applyBjState(s, silent) {
+        bjPlayer = s.player || [];
+        bjDealer = s.dealer || [];
+        bjInRound = !!s.inRound;
+        bjDealerHidden = !!s.dealerHidden;
+        bjTurn = s.turn || 1;
+
+        const isMyTurn = myPlayerId && bjTurn === myPlayerId;
+
+        bjDealBtn.disabled = bjInRound || !isMyTurn;
+        bjHitBtn.disabled = !bjInRound || !isMyTurn;
+        bjStandBtn.disabled = !bjInRound || !isMyTurn;
+
+        bjRender();
+
+        const pVal = bjHandValue(bjPlayer);
+        const dVal = bjHandValue(bjDealer);
+
+        if (!bjInRound && s.lastOutcome) {
+          const label = s.lastOutcome === "win" ? "THẮNG" : s.lastOutcome === "push" ? "HÒA" : "THUA";
+          bjResultEl.textContent = `${label} | Bạn ${pVal} | Dealer ${dVal} | ${s.lastReward || "—"} | Lượt kế: P${bjTurn}`;
+          if (!silent) addHistory(bjHistoryEl, `${label}: ${pVal}-${dVal} ${s.lastReward || "—"}`);
+        } else {
+          bjResultEl.textContent = bjInRound && bjDealerHidden ? `Bạn ${pVal} | Dealer ? | Lượt: P${bjTurn}` : `Bạn ${pVal} | Dealer ${dVal} | Lượt: P${bjTurn}`;
+        }
+      }
+
+      function sendBj(ev) {
+        if (!(socket && socket.connected)) return;
+        socket.emit(ev, {
+          winRewards: parseLines(bjWinRewardsEl.value),
+          pushRewards: parseLines(bjPushRewardsEl.value),
+          loseRewards: parseLines(bjLoseRewardsEl.value)
+        });
+      }
+
+      bjDealBtn.addEventListener("click", () => sendBj("bj:deal"));
+      bjHitBtn.addEventListener("click", () => sendBj("bj:hit"));
+      bjStandBtn.addEventListener("click", () => sendBj("bj:stand"));
+      bjNewBtn.addEventListener("click", () => { if (socket && socket.connected) socket.emit("bj:new"); });
+
+      if (socket) socket.on("bj:state", s => applyBjState(s, false));
+
+      const rlBetTypeEl = document.getElementById("rlBetType");
+      const rlNumberWrap = document.getElementById("rlNumberWrap");
+      const rlNumberEl = document.getElementById("rlNumber");
+      const rlSpinBtn = document.getElementById("rlSpinBtn");
+      const rlResetBtn = document.getElementById("rlResetBtn");
+      const rlResultEl = document.getElementById("rlResult");
+      const rlGridEl = document.getElementById("rlGrid");
+      const rlHistoryEl = document.getElementById("rlHistory");
+
+      const rlWinRewardsEl = document.getElementById("rlWinRewards");
+      const rlLoseRewardsEl = document.getElementById("rlLoseRewards");
+
+      const redNums = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+
+      function rlColor(n) {
+        if (n === 0) return "green";
+        return redNums.has(n) ? "red" : "black";
+      }
+
+      function rlBuildGrid() {
+        rlGridEl.innerHTML = "";
+        for (let n = 0; n <= 36; n++) {
+          const cell = document.createElement("div");
+          cell.className = `roulette-cell ${rlColor(n)}`;
+          cell.setAttribute("data-num", String(n));
+          cell.innerHTML = `<span>${n}</span><span style="opacity:.8;font-size:12px">${rlColor(n).toUpperCase()}</span>`;
+          rlGridEl.appendChild(cell);
+        }
+      }
+
+      function rlHighlight(n) {
+        [...rlGridEl.querySelectorAll(".roulette-cell")].forEach(c => c.classList.remove("active"));
+        const hit = rlGridEl.querySelector(`.roulette-cell[data-num="${n}"]`);
+        if (hit) hit.classList.add("active");
+      }
+
+      function rlBetWin(betType, betNumber, rolled) {
+        if (betType === "number") return rolled === betNumber;
+        if (rolled === 0) return false;
+        switch (betType) {
+          case "red": return rlColor(rolled) === "red";
+          case "black": return rlColor(rolled) === "black";
+          case "odd": return rolled % 2 === 1;
+          case "even": return rolled % 2 === 0;
+          case "low": return rolled >= 1 && rolled <= 18;
+          case "high": return rolled >= 19 && rolled <= 36;
+          default: return false;
+        }
+      }
+
+      function rlSpinLocal() {
+        const betType = rlBetTypeEl.value;
+        const betNumber = Math.max(0, Math.min(36, Number(rlNumberEl.value || 0)));
+        const rolled = randInt(37);
+        const win = rlBetWin(betType, betNumber, rolled);
+        const reward = win ? pickFromTextarea(rlWinRewardsEl) : pickFromTextarea(rlLoseRewardsEl);
+
+        rlHighlight(rolled);
+
+        const betLabelMap = {
+          red: "ĐỎ",
+          black: "ĐEN",
+          odd: "LẺ",
+          even: "CHẴN",
+          low: "1–18",
+          high: "19–36",
+          number: `SỐ ${betNumber}`
+        };
+        const betLabel = betLabelMap[betType] ?? betType;
+
+        rlResultEl.textContent = `Ra ${rolled} ${rlColor(rolled).toUpperCase()} | ${betLabel} | ${win ? "TRÚNG" : "TRẬT"} | ${reward}`;
+        addHistory(rlHistoryEl, `Local: ${rolled} ${win ? "W" : "L"} ${reward}`);
+      }
+
+      rlBetTypeEl.addEventListener("change", () => {
+        rlNumberWrap.style.display = (rlBetTypeEl.value === "number") ? "block" : "none";
+      });
+
+      rlSpinBtn.addEventListener("click", () => {
+        if (socket && socket.connected) {
+          socket.emit("rl:spin", {
+            betType: rlBetTypeEl.value,
+            betNumber: Number(rlNumberEl.value || 0),
+            winRewards: parseLines(rlWinRewardsEl.value),
+            loseRewards: parseLines(rlLoseRewardsEl.value)
+          });
+        } else {
+          rlSpinLocal();
+        }
+      });
+
+      rlResetBtn.addEventListener("click", () => {
+        rlResultEl.textContent = "—";
+        rlHistoryEl.innerHTML = "";
+        rlHighlight(-1);
+      });
+
+      if (socket) {
+        socket.on("rl:result", data => {
+          const betType = data.betType;
+          const betNumber = data.betNumber;
+          const rolled = data.rolled;
+          const color = String(data.color || "").toUpperCase();
+          const win = data.win;
+          const reward = data.reward;
+
+          rlHighlight(rolled);
+
+          const betLabelMap = {
+            red: "ĐỎ",
+            black: "ĐEN",
+            odd: "LẺ",
+            even: "CHẴN",
+            low: "1–18",
+            high: "19–36",
+            number: `SỐ ${betNumber}`
+          };
+          const betLabel = betLabelMap[betType] ?? betType;
+
+          rlResultEl.textContent = `Ra ${rolled} ${color} | ${betLabel} | ${win ? "TRÚNG" : "TRẬT"} | ${reward}`;
+          addHistory(rlHistoryEl, `${who(data.by)}: ${rolled} ${win ? "W" : "L"} ${reward}`);
+        });
+      }
+
+      rlBuildGrid();
+    })();
+  </script>
+</body>
+</html>
